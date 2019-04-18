@@ -9,13 +9,8 @@
     _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     _rootViewController = [[UINavigationController alloc] initWithRootViewController:[[MISRootViewController alloc] init]];
     //_rootViewController.tabBarItem.image=[UIImage imageNamed:@"save.png"];
-    if (@available(iOS 11, tvOS 11, *)) {
-        _rootViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
-    }
-    _rootViewController.tabBarItem.title = @"Root Snapshots";
     
     [localViewControllersArray addObject:_rootViewController];
-    //[localViewControllersArray addObject:_VarVC];
     
     tabBars.viewControllers = localViewControllersArray;
     tabBars.view.autoresizingMask=(UIViewAutoresizingFlexibleHeight);

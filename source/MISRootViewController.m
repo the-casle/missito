@@ -9,7 +9,10 @@
 
 	_objects = [[NSMutableArray alloc] init];
 
-	self.title = @"Root View Controller";
+	self.title = @"Yeet";
+    if (@available(iOS 11, tvOS 11, *)) {
+        self.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
+    }
 	self.navigationItem.leftBarButtonItem = self.editButtonItem;
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addButtonTapped:)];
 }

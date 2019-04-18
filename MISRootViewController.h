@@ -1,0 +1,3 @@
+@interface MISRootViewController : UITableViewController
+
+@end

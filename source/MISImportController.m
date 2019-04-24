@@ -7,7 +7,7 @@
 - (void)loadView {
 	[super loadView];
 
-    [self.navigationItem setTitle:@"Import"];
+    //[self.navigationItem setTitle:@"Import"];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(transitionToPageController:)];
 }
 

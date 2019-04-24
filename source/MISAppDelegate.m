@@ -21,6 +21,7 @@
     if (@available(iOS 11, tvOS 11, *)) {
         _viewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
+    _viewController.title = @"yeet pt 2";
     _viewController.view.backgroundColor = [UIColor blueColor];
      [localViewControllersArray addObject:_viewController];
     

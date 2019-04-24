@@ -1,18 +1,18 @@
-#import "MISViewController.h"
+#import "MISImportController.h"
 
-@implementation MISViewController {
+@implementation MISImportController {
 	NSMutableArray *_objects;
 }
 
 - (void)loadView {
 	[super loadView];
 
-    [self.navigationItem setTitle:@"Some Title"];
+    [self.navigationItem setTitle:@"Import"];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(transitionToPageController:)];
 }
 
 - (void)transitionToPageController:(id)sender {
-    MISViewController *secondController = [[MISViewController alloc] init];
+    MISImportController *secondController = [[MISImportController alloc] init];
     
     CGFloat red = arc4random_uniform(256) / 255.0;
     CGFloat green = arc4random_uniform(256) / 255.0;

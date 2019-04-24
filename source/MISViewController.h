@@ -1,3 +1,0 @@
-@interface MISViewController : UIViewController
-
-@end

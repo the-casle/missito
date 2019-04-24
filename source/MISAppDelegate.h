@@ -2,5 +2,5 @@
 
 @property (nonatomic, retain) UIWindow *window;
 @property (nonatomic, retain) UINavigationController *rootViewController;
-@property (nonatomic, retain) UINavigationController *viewController;
+@property (nonatomic, retain) UINavigationController *importController;
 @end

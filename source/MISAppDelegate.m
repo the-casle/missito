@@ -1,6 +1,6 @@
 #import "MISAppDelegate.h"
 #import "MISRootViewController.h"
-#import "MISViewController.h"
+#import "MISImportController.h"
 
 @implementation MISAppDelegate
 
@@ -9,7 +9,16 @@
     NSMutableArray *localViewControllersArray = [[NSMutableArray alloc] initWithCapacity:1];
     _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     
+    _importController = [[UINavigationController alloc] initWithRootViewController:[[MISImportController alloc] init]];
+    if (@available(iOS 11, tvOS 11, *)) {
+        _importController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
+    }
+    _importController.title = @"Import";
+    _importController.view.backgroundColor = [UIColor whiteColor];
+    [localViewControllersArray addObject:_importController];
+    
     _rootViewController = [[UINavigationController alloc] initWithRootViewController:[[MISRootViewController alloc] init]];
+    _rootViewController.title = @"yeet pt 2";
     if (@available(iOS 11, tvOS 11, *)) {
         _rootViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
@@ -17,13 +26,6 @@
     
     [localViewControllersArray addObject:_rootViewController];
     
-    _viewController = [[UINavigationController alloc] initWithRootViewController:[[MISViewController alloc] init]];
-    if (@available(iOS 11, tvOS 11, *)) {
-        _viewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
-    }
-    _viewController.title = @"yeet pt 2";
-    _viewController.view.backgroundColor = [UIColor blueColor];
-     [localViewControllersArray addObject:_viewController];
     
     tabBars.viewControllers = localViewControllersArray;
     tabBars.view.autoresizingMask=(UIViewAutoresizingFlexibleHeight);

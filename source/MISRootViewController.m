@@ -62,10 +62,21 @@
         NSString *filename = (NSString *)obj;
         NSString *extension = [[filename pathExtension] lowercaseString];
         if ([filename rangeOfString:@"com.apple"].location == NSNotFound && [extension isEqualToString:@"plist"]) {
-            [devPrefs addObject:filename];
+            if([filename componentsSeparatedByString:@"."].count >= 4){
+                [devPrefs addObject:filename];
+            }
         }
     }];
     return devPrefs;
+}
+
+-(NSString *) nameFromBundleID:(NSString *) bundle{
+    NSArray *sepWithRest = [bundle componentsSeparatedByString:@"."];
+    int count = sepWithRest.count;
+    int nameIndex = 0;
+    nameIndex = count - (count - 2);
+    NSString *baseName = sepWithRest[nameIndex];
+    return [baseName capitalizedString];
 }
 
 #pragma mark - Table View Delegate
@@ -74,7 +85,7 @@
 	//[tableView deselectRowAtIndexPath:indexPath animated:YES];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     MISImportController *secondController = [[MISImportController alloc] init];
-    [secondController.navigationItem setTitle:cell.textLabel.text];
+    [secondController.navigationItem setTitle: [self nameFromBundleID: cell.textLabel.text]];
     
     CGFloat red = arc4random_uniform(256) / 255.0;
     CGFloat green = arc4random_uniform(256) / 255.0;

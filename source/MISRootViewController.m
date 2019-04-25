@@ -13,19 +13,11 @@
 	_objects = [[NSMutableArray alloc] init];
 
 	self.title = @"Yeet";
-	self.navigationItem.leftBarButtonItem = self.editButtonItem;
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addButtonTapped:)];
     for(NSString *preference in [self preferenceArray]){
         [_objects insertObject:preference atIndex:0];
         [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
 }
-
-- (void)addButtonTapped:(id)sender {
-	[_objects insertObject:[NSDate date] atIndex:0];
-	[self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
 #pragma mark - Table View Data Source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -44,8 +36,8 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
 
-	NSDate *date = _objects[indexPath.row];
-	cell.textLabel.text = date.description;
+	NSString *bundleID = _objects[indexPath.row];
+    cell.textLabel.text = [self nameFromBundleID:bundleID];
 	return cell;
 }
 
@@ -53,6 +45,8 @@
 	[_objects removeObjectAtIndex:indexPath.row];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
+
+#pragma mark - Utility
 
 -(NSArray *) preferenceArray{
     NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_PATH
@@ -74,9 +68,17 @@
     NSArray *sepWithRest = [bundle componentsSeparatedByString:@"."];
     int count = sepWithRest.count;
     int nameIndex = 0;
-    nameIndex = count - (count - 2);
+    if(count > 1) {
+        nameIndex = count - (count - 2);
+    } else {
+        nameIndex = 0;
+    }
     NSString *baseName = sepWithRest[nameIndex];
     return [baseName capitalizedString];
+}
+
+-(NSString *) pathToPreferenceFromBundleID:(NSString *) bundle{
+    return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
 }
 
 #pragma mark - Table View Delegate
@@ -85,7 +87,7 @@
 	//[tableView deselectRowAtIndexPath:indexPath animated:YES];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     MISImportController *secondController = [[MISImportController alloc] init];
-    [secondController.navigationItem setTitle: [self nameFromBundleID: cell.textLabel.text]];
+    [secondController.navigationItem setTitle: cell.textLabel.text];
     
     CGFloat red = arc4random_uniform(256) / 255.0;
     CGFloat green = arc4random_uniform(256) / 255.0;

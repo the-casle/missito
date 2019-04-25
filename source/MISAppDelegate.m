@@ -18,7 +18,7 @@
     [localViewControllersArray addObject:_importController];
     
     _rootViewController = [[UINavigationController alloc] initWithRootViewController:[[MISRootViewController alloc] init]];
-    _rootViewController.title = @"yeet pt 2";
+    _rootViewController.title = @"Preferences";
     if (@available(iOS 11, tvOS 11, *)) {
         _rootViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }

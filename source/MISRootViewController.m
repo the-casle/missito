@@ -12,7 +12,7 @@
 
 	_objects = [[NSMutableArray alloc] init];
 
-	self.title = @"Yeet";
+    [self.navigationItem setTitle: @"Preferences"];
     for(NSString *preference in [self preferenceArray]){
         [_objects insertObject:preference atIndex:0];
         [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];

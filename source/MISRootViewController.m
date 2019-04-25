@@ -1,5 +1,5 @@
 #import "MISRootViewController.h"
-#import "MISImportController.h"
+#import "MISDetailViewController.h"
 
 #define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
 
@@ -86,14 +86,10 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	//[tableView deselectRowAtIndexPath:indexPath animated:YES];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    MISImportController *secondController = [[MISImportController alloc] init];
-    [secondController.navigationItem setTitle: cell.textLabel.text];
-    
-    CGFloat red = arc4random_uniform(256) / 255.0;
-    CGFloat green = arc4random_uniform(256) / 255.0;
-    CGFloat blue = arc4random_uniform(256) / 255.0;
-    secondController.view.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
-    [self.navigationController pushViewController:secondController animated:YES];
+    MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
+    [detailController.navigationItem setTitle: cell.textLabel.text];
+    detailController.bundleID = _objects[indexPath.row];
+    [self.navigationController pushViewController:detailController animated:YES];
 }
 
 @end

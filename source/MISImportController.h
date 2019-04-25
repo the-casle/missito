@@ -1,3 +1,2 @@
 @interface MISImportController : UIViewController
-
 @end

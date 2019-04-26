@@ -85,16 +85,12 @@
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if(indexPath.section == 0){
-        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        MISPreferenceViewController *preferenceController = [[MISPreferenceViewController alloc] init];
-        NSDictionary *rowDict = _objects[indexPath.row];
-        preferenceController.bundleID = rowDict[@"BundleID"];
-        [preferenceController.navigationItem setTitle: cell.textLabel.text];
-        [self.navigationController pushViewController:preferenceController animated:YES];
-    } else {
-        // replace current with saved or share
-    }
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    MISPreferenceViewController *preferenceController = [[MISPreferenceViewController alloc] init];
+    NSDictionary *rowDict = _objects[indexPath.row];
+    preferenceController.bundleID = rowDict[@"BundleID"];
+    [preferenceController.navigationItem setTitle: cell.textLabel.text];
+    [self.navigationController pushViewController:preferenceController animated:YES];
 }
 
 @end

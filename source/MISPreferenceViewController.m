@@ -15,6 +15,9 @@
     [firstSection addObject:@"Filler Name"];
     NSMutableArray *secondSection = [[NSMutableArray alloc] init];
     [secondSection addObject:@"Other cell"];
+    [secondSection addObject:@"Boo"];
+    [secondSection addObject:@"Yuh"];
+    [secondSection addObject:@"name"];
     [_objects insertObject:firstSection atIndex:0];
     [_objects insertObject:secondSection atIndex:1];
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0], [NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -50,8 +53,8 @@
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-	[_objects removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+	/*[_objects removeObjectAtIndex:indexPath.row];
+	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];*/
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -109,9 +112,9 @@
                                         [self.tableView moveRowAtIndexPath: indexPath toIndexPath: [NSIndexPath indexPathForRow:1 inSection:0]];
                                         [self.tableView reloadData];
                                         
-                                        [_objects[indexPath.section] insertObject: currentDict atIndex:0];
+                                        [_objects[indexPath.section] addObject: currentDict];
                                         [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
-                                        [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: indexPath];
+                                        [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
                                     }];
         
         UIAlertAction* cancelButton = [UIAlertAction

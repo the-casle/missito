@@ -34,8 +34,9 @@
 
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 	}
-
+    
 	NSDictionary *rowDict = _objects[indexPath.row];
     cell.textLabel.text = rowDict[@"Name"];
 	return cell;
@@ -92,7 +93,7 @@
         [preferenceController.navigationItem setTitle: cell.textLabel.text];
         [self.navigationController pushViewController:preferenceController animated:YES];
     } else {
-        // replace current with saved
+        // replace current with saved or share
     }
 }
 

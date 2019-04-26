@@ -1,5 +1,5 @@
 #import "MISRootViewController.h"
-#import "MISDetailViewController.h"
+#import "MISPreferenceViewController.h"
 
 #define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
 
@@ -14,7 +14,7 @@
 
     [self.navigationItem setTitle: @"Preferences"];
     for(NSString *preference in [self preferenceArray]){
-        [_objects insertObject:preference atIndex:0];
+        [_objects insertObject:@{@"Name":[self nameFromBundleID:preference], @"BundleID":preference} atIndex:0];
         [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
 }
@@ -36,8 +36,8 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
 
-	NSString *bundleID = _objects[indexPath.row];
-    cell.textLabel.text = [self nameFromBundleID:bundleID];
+	NSDictionary *rowDict = _objects[indexPath.row];
+    cell.textLabel.text = rowDict[@"Name"];
 	return cell;
 }
 
@@ -84,12 +84,16 @@
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	//[tableView deselectRowAtIndexPath:indexPath animated:YES];
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
-    [detailController.navigationItem setTitle: cell.textLabel.text];
-    detailController.bundleID = _objects[indexPath.row];
-    [self.navigationController pushViewController:detailController animated:YES];
+    if(indexPath.section == 0){
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        MISPreferenceViewController *preferenceController = [[MISPreferenceViewController alloc] init];
+        NSDictionary *rowDict = _objects[indexPath.row];
+        preferenceController.bundleID = rowDict[@"BundleID"];
+        [preferenceController.navigationItem setTitle: cell.textLabel.text];
+        [self.navigationController pushViewController:preferenceController animated:YES];
+    } else {
+        // replace current with saved
+    }
 }
 
 @end

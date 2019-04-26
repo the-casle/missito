@@ -1,32 +1,30 @@
+#import "MISPreferenceViewController.h"
 #import "MISDetailViewController.h"
 
 #define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
 
-@implementation MISDetailViewController {
+@implementation MISPreferenceViewController {
 	NSMutableArray *_objects;
 }
 
 - (void)loadView {
 	[super loadView];
-
-	_objects = [[NSMutableArray alloc] init];
-    [_objects insertObject:self.bundleID atIndex:0];
-    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(export:)];
+	_objects = [[NSMutableArray alloc] init];
+    [_objects insertObject:@[@"Filler Name"] atIndex:0];
+    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+
 }
 
-- (void)export:(id)sender {
-    // export stuff
-}
 #pragma mark - Table View Data Source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return _objects.count;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-	return 1;
+    if(_objects.count > section) return ((NSArray *)_objects[section]).count;
+    else return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -36,7 +34,8 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    cell.textLabel.text = _objects[indexPath.row];
+
+    cell.textLabel.text = [self dataForIndex: indexPath];
 	return cell;
 }
 
@@ -48,11 +47,11 @@
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return @"BundleID";
+            return @"Current";
             break;
             
         case 1:
-            return @"Root Path";
+            return @"Saved";
             break;
             
         default:
@@ -67,20 +66,18 @@
     return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
 }
 
+-(id) dataForIndex:(NSIndexPath *) indexPath {
+    NSArray *section = _objects[indexPath.section];
+    return section[indexPath.row];
+}
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	[tableView deselectRowAtIndexPath:indexPath animated:YES];
-    /*
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    MISImportController *secondController = [[MISImportController alloc] init];
-    [secondController.navigationItem setTitle: cell.textLabel.text];
-    
-    CGFloat red = arc4random_uniform(256) / 255.0;
-    CGFloat green = arc4random_uniform(256) / 255.0;
-    CGFloat blue = arc4random_uniform(256) / 255.0;
-    secondController.view.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
-    [self.navigationController pushViewController:secondController animated:YES];*/
+    MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
+    [detailController.navigationItem setTitle: cell.textLabel.text];
+    detailController.bundleID = self.bundleID;
+    [self.navigationController pushViewController:detailController animated:YES];
 }
 
 @end

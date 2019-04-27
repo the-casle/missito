@@ -33,12 +33,13 @@
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
 
 	if (!cell) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
 	}
     
 	NSDictionary *rowDict = _objects[indexPath.row];
     cell.textLabel.text = rowDict[@"Name"];
+    cell.detailTextLabel.text = rowDict[@"BundleID"];
 	return cell;
 }
 

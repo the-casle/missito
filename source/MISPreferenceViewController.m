@@ -21,6 +21,34 @@
     [_objects insertObject:firstSection atIndex:0];
     [_objects insertObject:secondSection atIndex:1];
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0], [NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPreferenceButton:)];
+}
+
+- (void)addPreferenceButton:(id)sender {
+    UIAlertController *popAlert = [UIAlertController
+                                   alertControllerWithTitle:@"New Preference"
+                                   message:nil
+                                   preferredStyle:
+                                   UIAlertControllerStyleAlert];
+    [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+        textField.text = [NSString stringWithFormat:@"Preference (%i)", (int)((NSArray *)_objects.lastObject).count + 1];
+    }];
+    UIAlertAction* popCancelButton = [UIAlertAction
+                                      actionWithTitle:@"Cancel"
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                      }];
+    UIAlertAction* popOkButton = [UIAlertAction
+                                  actionWithTitle:@"OK"
+                                  style:UIAlertActionStyleDefault
+                                  handler:^(UIAlertAction * action) {
+                                      [_objects.lastObject addObject: popAlert.textFields[0].text];
+                                      [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                  }];
+    [popAlert addAction:popCancelButton];
+    [popAlert addAction:popOkButton];
+    [self presentViewController:popAlert animated:YES completion:nil];
 }
 
 #pragma mark - Table View Data Source
@@ -41,7 +69,6 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.accessoryType = UITableViewCellAccessoryDetailButton;
 
     cell.textLabel.text = [self dataForIndex: indexPath];
@@ -81,7 +108,7 @@
 }
 #pragma mark - Table View Delegate
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
     [detailController.navigationItem setTitle: cell.textLabel.text];
@@ -89,7 +116,7 @@
     [self.navigationController pushViewController:detailController animated:YES];
 }
 - (void)tableView:(UITableView *)tableView
-accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath{
+didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     UIAlertController * alert = [UIAlertController
                                  alertControllerWithTitle:@"Options"

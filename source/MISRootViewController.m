@@ -12,9 +12,21 @@
 	_objects = [[NSMutableArray alloc] init];
 
     [self.navigationItem setTitle: @"Preferences"];
+    NSMutableArray *nameArray = [[NSMutableArray alloc] init];
     for(NSString *preference in [self preferenceArray]){
-        [_objects insertObject:@{@"Name":[self nameFromBundleID:preference], @"BundleID":preference} atIndex:0];
-        [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [nameArray addObject:[self nameFromBundleID:preference]];
+    }
+    
+    NSArray *sortedName = [nameArray sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
+    for(NSString *name in sortedName){
+        for(NSString *bundle in [self preferenceArray]){
+            NSString *nameFromBundle = [self nameFromBundleID:bundle];
+            if([nameFromBundle isEqualToString:name]){
+                [_objects addObject:@{@"Name":nameFromBundle, @"BundleID":bundle}];
+                [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                break;
+            }
+        }
     }
 }
 #pragma mark - Table View Data Source

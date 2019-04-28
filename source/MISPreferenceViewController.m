@@ -112,6 +112,8 @@
 }
 
 -(NSDictionary *) activePlist {
+    NSString *onlyBundle = [self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+    CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     NSString *pathToActive = [self pathToPreferenceFromBundleID:self.bundleID];
     return [NSDictionary dictionaryWithContentsOfFile: pathToActive];
 }
@@ -120,6 +122,10 @@
         [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]
                        error:nil];
     }
+    NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+    NSString *onlyBundle = [self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+    CFPreferencesSetMultiple((__bridge CFDictionaryRef)currentDict[@"Plist"], nil, (__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
 -(NSString *) unsavedPrefernceString{

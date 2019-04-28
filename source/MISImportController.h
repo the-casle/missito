@@ -1,2 +1,2 @@
-@interface MISImportController : UIViewController <UITextViewDelegate>
+@interface MISImportController : UIViewController
 @end

@@ -1,5 +1,6 @@
 #import "MISImportController.h"
 #import "MISSerializationController.h"
+#import "MISSharingController.h"
 
 @implementation MISImportController {
 	NSMutableArray *_objects;
@@ -24,20 +25,10 @@
     if(matches.count > 0){
         // do link stuff
     } else {
-        BOOL isDir;
-        NSFileManager *fileManager= [NSFileManager defaultManager];
-        if(![fileManager fileExistsAtPath: IMPORTED_DIRECTORY_PATH isDirectory:&isDir]){
-            [fileManager createDirectoryAtPath:IMPORTED_DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
-        }
-        
         NSDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:pasteString];
-        NSMutableDictionary *baseDict = deserialDict[@"BaseDict"];
-        NSString *importPath = [NSString stringWithFormat:@"%@/%@", IMPORTED_DIRECTORY_PATH, deserialDict[@"BundleID"]];
-        if (@available(iOS 11, tvOS 11, *)) {
-            [baseDict writeToURL: [NSURL fileURLWithPath:importPath]
-                           error:nil];
-        }
+
+        MISSharingController *shareCont = [MISSharingController sharedInstance];
+        [shareCont.importArray addObject: deserialDict];
     }
-    
 }
 @end

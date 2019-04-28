@@ -1,6 +1,7 @@
 #import "MISPreferenceViewController.h"
 #import "MISDetailViewController.h"
 #import "MISSerializationController.h"
+#import "MISSharingController.h"
 
 
 @implementation MISPreferenceViewController {
@@ -33,7 +34,7 @@
     } else {
         _objects = savedObjects;
     }
-    for(NSMutableDictionary *importDict in [self importArray]){
+    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
         [_objects.lastObject addObject: importDict];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
         
@@ -166,20 +167,6 @@
         currentDict[@"Name"] = [self unsavedPrefernceString];
         [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation: UITableViewRowAnimationAutomatic];
     }
-}
-
--(NSArray *) importArray{
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:IMPORTED_DIRECTORY_PATH
-                                                                        error:NULL];
-    NSMutableArray *importDicts = [[NSMutableArray alloc] init];
-    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *filename = (NSString *)obj;
-        if ([filename isEqualToString:self.bundleID]) {
-            [importDicts addObject: [NSDictionary dictionaryWithContentsOfFile:[IMPORTED_DIRECTORY_PATH stringByAppendingPathComponent:filename]]];
-            [[NSFileManager defaultManager] removeItemAtPath:[IMPORTED_DIRECTORY_PATH stringByAppendingPathComponent:filename] error:nil];
-        }
-    }];
-    return importDicts;
 }
 
 #pragma mark - Table View Delegate

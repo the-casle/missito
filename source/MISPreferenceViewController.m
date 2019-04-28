@@ -71,7 +71,7 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    cell.accessoryType = UITableViewCellAccessoryDetailButton;
+    if(indexPath.section > 0) cell.accessoryType = UITableViewCellAccessoryDetailButton;
 
     NSDictionary *dataDict = [self dataForIndex: indexPath];
     cell.textLabel.text = dataDict[@"Name"];
@@ -198,6 +198,44 @@
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    if(indexPath.section == 0){
+        UIAlertController *popAlert = [UIAlertController
+                                       alertControllerWithTitle:@"New Preference"
+                                       message:nil
+                                       preferredStyle:
+                                       UIAlertControllerStyleAlert];
+        [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+            dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+            textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
+        }];
+        UIAlertAction* popCancelButton = [UIAlertAction
+                                          actionWithTitle:@"Cancel"
+                                          style:UIAlertActionStyleDefault
+                                          handler:^(UIAlertAction * action) {
+                                          }];
+        UIAlertAction* popOkButton = [UIAlertAction
+                                      actionWithTitle:@"OK"
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                          NSString *inputText = [self singleNameForName: popAlert.textFields[0].text];
+                                          NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] init];
+                                          dataDict[@"Name"] = inputText;
+                                          dataDict[@"Plist"] = [self activePlist];
+                                          [_objects.lastObject addObject: dataDict];
+                                          [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                          NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                          currentDict[@"Name"] = inputText;
+                                          
+                                          [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                          [self saveObjects];
+                                      }];
+        [popAlert addAction:popCancelButton];
+        [popAlert addAction:popOkButton];
+        [self presentViewController:popAlert animated:YES completion:nil];
+    }
+    
     UIAlertController *alert = [UIAlertController
                                  alertControllerWithTitle:@"Options"
                                  message:nil
@@ -307,46 +345,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                         [popAlert addAction:popOkButton];
                                         [self presentViewController:popAlert animated:YES completion:nil];
                                     }];
-    UIAlertAction *saveButton = [UIAlertAction
-                                     actionWithTitle:@"Save"
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction * action) {
-                                         UIAlertController *popAlert = [UIAlertController
-                                                                        alertControllerWithTitle:@"New Preference"
-                                                                        message:nil
-                                                                        preferredStyle:
-                                                                        UIAlertControllerStyleAlert];
-                                         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-                                             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
-                                             dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-                                             textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
-                                         }];
-                                         UIAlertAction* popCancelButton = [UIAlertAction
-                                                                           actionWithTitle:@"Cancel"
-                                                                           style:UIAlertActionStyleDefault
-                                                                           handler:^(UIAlertAction * action) {
-                                                                           }];
-                                         UIAlertAction* popOkButton = [UIAlertAction
-                                                                       actionWithTitle:@"OK"
-                                                                       style:UIAlertActionStyleDefault
-                                                                       handler:^(UIAlertAction * action) {
-                                                                           NSString *inputText = [self singleNameForName: popAlert.textFields[0].text];
-                                                                           NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] init];
-                                                                           dataDict[@"Name"] = inputText;
-                                                                           dataDict[@"Plist"] = [self activePlist];
-                                                                           [_objects.lastObject addObject: dataDict];
-                                                                           [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
-                                                                           NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-                                                                           currentDict[@"Name"] = inputText;
-                                                                           
-                                                                           [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-                                                                           [self saveObjects];
-                                                                       }];
-                                         [popAlert addAction:popCancelButton];
-                                         [popAlert addAction:popOkButton];
-                                         [self presentViewController:popAlert animated:YES completion:nil];
-                                     }];
-    
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
                                    style:UIAlertActionStyleDefault
@@ -356,7 +354,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     if(indexPath.section > 0)[alert addAction:makeCurrentButton];
     if(indexPath.section > 0)[alert addAction:editNameButton];
-    if(indexPath.section == 0)[alert addAction:saveButton];
     [alert addAction:cancelButton];
     
     [self presentViewController:alert animated:YES completion:nil];

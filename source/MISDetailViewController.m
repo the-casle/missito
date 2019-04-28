@@ -1,7 +1,8 @@
 #import "MISDetailViewController.h"
 #import "MISSerializationController.h"
+#import <malloc/malloc.h>
 
-#define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
+#define DIRECTORY_PATH @"/var/mobile/Library/Missito"
 
 @implementation MISDetailViewController {
 	NSMutableArray *_objects;
@@ -12,7 +13,11 @@
 
 	_objects = [[NSMutableArray alloc] init];
     [_objects insertObject:self.bundleID atIndex:0];
-    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+
+    NSString *formatSize = [NSString stringWithFormat:@"%zd bytes", malloc_size((__bridge const void *) self.shareDict)];
+    [_objects insertObject:formatSize atIndex:1];
+    
+    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0],[NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
     self.tableView.allowsSelection = NO;
     
@@ -21,17 +26,16 @@
 
 - (void)export:(id)sender {
     NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
-    NSString *pathToFile = [self pathToPreferenceFromBundleID:self.bundleID];
+    NSString *pathToFile = [NSString stringWithFormat:@"%@/%@", DIRECTORY_PATH, self.bundleID];
     
     shareDict[@"PathToFile"] = pathToFile;
-    shareDict[@"PLIST"] = [NSDictionary dictionaryWithContentsOfFile: pathToFile];
-    shareDict[@"Name"] = self.navigationItem.title;
+    shareDict[@"BaseDict"] = self.shareDict;
     NSString *serialDict = [MISSerializationController serializeDictionary:shareDict];
     
-    NSArray * activityItems = @[serialDict];
-    NSArray * applicationActivities = nil;
-    NSArray * excludeActivities = @[UIActivityTypePrint];
-    UIActivityViewController * activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+    NSArray *activityItems = @[serialDict];
+    NSArray *applicationActivities = nil;
+    NSArray *excludeActivities = @[UIActivityTypePrint];
+    UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
     activityController.excludedActivityTypes = excludeActivities;
     [self presentViewController:activityController animated:YES completion:nil];
 }
@@ -52,7 +56,7 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    cell.textLabel.text = _objects[indexPath.row];
+    cell.textLabel.text = _objects[indexPath.section];
 	return cell;
 }
 
@@ -68,7 +72,7 @@
             break;
             
         case 1:
-            return @"Root Path";
+            return @"Size";
             break;
             
         default:
@@ -78,10 +82,6 @@
 }
 
 #pragma mark - Utility
-
--(NSString *) pathToPreferenceFromBundleID:(NSString *) bundle{
-    return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
-}
 
 #pragma mark - Table View Delegate
 

@@ -12,11 +12,11 @@
 	_objects = [[NSMutableArray alloc] init];
 
     [self.navigationItem setTitle: @"Preferences"];
+    
     NSMutableArray *nameArray = [[NSMutableArray alloc] init];
     for(NSString *preference in [self preferenceArray]){
         [nameArray addObject:[self nameFromBundleID:preference]];
     }
-    
     NSArray *sortedName = [nameArray sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
     for(NSString *name in sortedName){
         for(NSString *bundle in [self preferenceArray]){

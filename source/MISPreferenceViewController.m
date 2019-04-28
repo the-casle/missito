@@ -170,6 +170,7 @@
     MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
     [detailController.navigationItem setTitle: cell.textLabel.text];
     detailController.bundleID = self.bundleID;
+    detailController.shareDict = [self dataForIndex:indexPath];
     [self.navigationController pushViewController:detailController animated:YES];
 }
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {

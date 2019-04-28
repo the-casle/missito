@@ -25,7 +25,6 @@
                     NSMutableArray *firstSection = [[NSMutableArray alloc] init];
                     NSMutableArray *secondSection = [[NSMutableArray alloc] init];
                     NSMutableDictionary *currentDict = [[NSMutableDictionary alloc] init];
-                    currentDict[@"Name"] = [NSDate date].description;
                     currentDict[@"Plist"] = [self activePlist];
                     [firstSection addObject:currentDict];
         
@@ -34,13 +33,12 @@
     } else {
         _objects = savedObjects;
     }
+    [self updateCurrentCell];
     
-    NSDate *prefEditDate = [[fileManager attributesOfItemAtPath:[self pathToPreferenceFromBundleID:self.bundleID] error:NULL] fileModificationDate];
-    NSDate *currentEditDate = [[fileManager attributesOfItemAtPath:_bundleIdPath error:NULL] fileModificationDate];
-    if ([prefEditDate timeIntervalSinceReferenceDate] > [currentEditDate timeIntervalSinceReferenceDate]) {
-        NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-        currentDict[@"Name"] = [self unsavedPrefernceString];
-    }
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(updateCurrentCell)
+                                                 name:UIApplicationWillEnterForegroundNotification
+                                               object:[UIApplication sharedApplication]];
 	
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0], [NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
@@ -150,6 +148,18 @@
         doesExist = ([dict[@"Name"] isEqualToString:name]) ? YES : NO;
     }
     return doesExist;
+}
+    
+-(void) updateCurrentCell{
+    NSLog(@"missito | foreFround");
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    NSDate *prefEditDate = [[fileManager attributesOfItemAtPath:[self pathToPreferenceFromBundleID:self.bundleID] error:NULL] fileModificationDate];
+    NSDate *currentEditDate = [[fileManager attributesOfItemAtPath:_bundleIdPath error:NULL] fileModificationDate];
+    if ([prefEditDate timeIntervalSinceReferenceDate] > [currentEditDate timeIntervalSinceReferenceDate]) {
+        NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+        currentDict[@"Name"] = [self unsavedPrefernceString];
+        [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation: UITableViewRowAnimationAutomatic];
+    }
 }
 
 

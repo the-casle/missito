@@ -1,4 +1,5 @@
 #import "MISDetailViewController.h"
+#import "MISSerializationController.h"
 
 #define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
 
@@ -13,11 +14,26 @@
     [_objects insertObject:self.bundleID atIndex:0];
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
+    self.tableView.allowsSelection = NO;
+    
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(export:)];
 }
 
 - (void)export:(id)sender {
-    // export stuff
+    NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
+    NSString *pathToFile = [self pathToPreferenceFromBundleID:self.bundleID];
+    
+    shareDict[@"PathToFile"] = pathToFile;
+    shareDict[@"PLIST"] = [NSDictionary dictionaryWithContentsOfFile: pathToFile];
+    shareDict[@"Name"] = self.navigationItem.title;
+    NSString *serialDict = [MISSerializationController serializeDictionary:shareDict];
+    
+    NSArray * activityItems = @[serialDict];
+    NSArray * applicationActivities = nil;
+    NSArray * excludeActivities = @[UIActivityTypePrint];
+    UIActivityViewController * activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+    activityController.excludedActivityTypes = excludeActivities;
+    [self presentViewController:activityController animated:YES completion:nil];
 }
 #pragma mark - Table View Data Source
 

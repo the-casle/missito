@@ -1,7 +1,6 @@
 #import "MISRootViewController.h"
 #import "MISPreferenceViewController.h"
-
-#define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
+#import "MISSerializationController.h"
 
 @implementation MISRootViewController {
 	NSMutableArray *_objects;

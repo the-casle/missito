@@ -10,4 +10,9 @@ $(APPLICATION_NAME)_CFLAGS += -fobjc-arc -I$(THEOS_PROJECT_DIR)/source
 include $(THEOS_MAKE_PATH)/application.mk
 
 after-install::
-	install.exec "killall \"Missito\" && uicache" || true
+	install.exec "killall \"Missito\"" || true
+
+
+# install.exec "killall \"Missito\" && uicache " || true
+
+

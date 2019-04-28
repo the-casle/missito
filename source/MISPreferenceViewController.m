@@ -1,54 +1,50 @@
 #import "MISPreferenceViewController.h"
 #import "MISDetailViewController.h"
+#import "MISSerializationController.h"
 
-#define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
+#define DIRECTORY_PATH @"/var/mobile/Library/Missito"
 
 @implementation MISPreferenceViewController {
 	NSMutableArray *_objects;
+    NSString *_bundleIdPath;
 }
 
 - (void)loadView {
 	[super loadView];
     
-	_objects = [[NSMutableArray alloc] init];
-    NSMutableArray *firstSection = [[NSMutableArray alloc] init];
-    [firstSection addObject:@"Filler Name"];
-    NSMutableArray *secondSection = [[NSMutableArray alloc] init];
-    [secondSection addObject:@"Other cell"];
-    [secondSection addObject:@"Boo"];
-    [secondSection addObject:@"Yuh"];
-    [secondSection addObject:@"name"];
-    [_objects insertObject:firstSection atIndex:0];
-    [_objects insertObject:secondSection atIndex:1];
+    BOOL isDir;
+    _bundleIdPath = [NSString stringWithFormat:@"%@/%@", DIRECTORY_PATH, self.bundleID];
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    if(![fileManager fileExistsAtPath:DIRECTORY_PATH isDirectory:&isDir]){
+        [fileManager createDirectoryAtPath:DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
+    }
+    
+    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_bundleIdPath];
+    if(!savedObjects){
+        _objects = [[NSMutableArray alloc] init];
+                    NSMutableArray *firstSection = [[NSMutableArray alloc] init];
+                    NSMutableArray *secondSection = [[NSMutableArray alloc] init];
+                    NSMutableDictionary *currentDict = [[NSMutableDictionary alloc] init];
+                    currentDict[@"Name"] = [NSDate date].description;
+                    currentDict[@"Plist"] = [self activePlist];
+                    [firstSection addObject:currentDict];
+        
+        [_objects insertObject:firstSection atIndex:0];
+        [_objects insertObject:secondSection atIndex:1];
+    } else {
+        _objects = savedObjects;
+    }
+    
+    NSDate *prefEditDate = [[fileManager attributesOfItemAtPath:[self pathToPreferenceFromBundleID:self.bundleID] error:NULL] fileModificationDate];
+    NSDate *currentEditDate = [[fileManager attributesOfItemAtPath:_bundleIdPath error:NULL] fileModificationDate];
+    if ([prefEditDate timeIntervalSinceReferenceDate] > [currentEditDate timeIntervalSinceReferenceDate]) {
+        NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+        currentDict[@"Name"] = [self unsavedPrefernceString];
+    }
+	
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0], [NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addPreferenceButton:)];
-}
-
-- (void)addPreferenceButton:(id)sender {
-    UIAlertController *popAlert = [UIAlertController
-                                   alertControllerWithTitle:@"New Preference"
-                                   message:nil
-                                   preferredStyle:
-                                   UIAlertControllerStyleAlert];
-    [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-        textField.text = [NSString stringWithFormat:@"Preference (%i)", (int)((NSArray *)_objects.lastObject).count + 1];
-    }];
-    UIAlertAction* popCancelButton = [UIAlertAction
-                                      actionWithTitle:@"Cancel"
-                                      style:UIAlertActionStyleDefault
-                                      handler:^(UIAlertAction * action) {
-                                      }];
-    UIAlertAction* popOkButton = [UIAlertAction
-                                  actionWithTitle:@"OK"
-                                  style:UIAlertActionStyleDefault
-                                  handler:^(UIAlertAction * action) {
-                                      [_objects.lastObject addObject: popAlert.textFields[0].text];
-                                      [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
-                                  }];
-    [popAlert addAction:popCancelButton];
-    [popAlert addAction:popOkButton];
-    [self presentViewController:popAlert animated:YES completion:nil];
+    self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
 #pragma mark - Table View Data Source
@@ -71,13 +67,21 @@
 	}
     cell.accessoryType = UITableViewCellAccessoryDetailButton;
 
-    cell.textLabel.text = [self dataForIndex: indexPath];
+    NSDictionary *dataDict = [self dataForIndex: indexPath];
+    cell.textLabel.text = dataDict[@"Name"];
 	return cell;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-	/*[_objects removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];*/
+    NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+    NSMutableDictionary *selectedDict = [self dataForIndex:indexPath];
+    if([currentDict[@"Name"] isEqualToString:selectedDict[@"Name"]]){
+        currentDict[@"Name"] = [self unsavedPrefernceString];
+        [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+    }
+	[_objects[indexPath.section] removeObjectAtIndex:indexPath.row];
+	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self saveObjects];
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -106,6 +110,31 @@
     NSArray *section = _objects[indexPath.section];
     return section[indexPath.row];
 }
+
+-(NSDictionary *) activePlist {
+    NSString *pathToActive = [self pathToPreferenceFromBundleID:self.bundleID];
+    return [NSDictionary dictionaryWithContentsOfFile: pathToActive];
+}
+-(void) saveObjects{
+    if (@available(iOS 11, tvOS 11, *)) {
+        [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]
+                       error:nil];
+        NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+        [currentDict[@"Plist"] writeToURL:[NSURL fileURLWithPath:[self pathToPreferenceFromBundleID:self.bundleID]]
+                       error:nil];
+    }
+}
+
+-(NSString *) unsavedPrefernceString{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSDate *prefEditDate = [[fileManager attributesOfItemAtPath:[self pathToPreferenceFromBundleID:self.bundleID] error:NULL] fileModificationDate];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+    dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+    NSString *formated = [NSString stringWithFormat:@"Unsaved - %@",[dateFormatter stringFromDate: prefEditDate]];
+    return formated;
+}
+
+
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
@@ -115,36 +144,86 @@
     detailController.bundleID = self.bundleID;
     [self.navigationController pushViewController:detailController animated:YES];
 }
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    return indexPath.section > 0 ? YES : NO;
+}
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    UIAlertController * alert = [UIAlertController
+    UIAlertController *alert = [UIAlertController
                                  alertControllerWithTitle:@"Options"
                                  message:nil
                                  preferredStyle:
                                  UIAlertControllerStyleActionSheet];
     
-    UIAlertAction* makeCurrentButton = nil;
-    if(indexPath.section > 0){
-        makeCurrentButton = [UIAlertAction
-                             actionWithTitle:@"Make Current"
-                             style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction * action) {
-                                 NSIndexPath *currentIndex = [NSIndexPath indexPathForRow:0 inSection:0];
-                                 NSDictionary *currentDict = [self dataForIndex:currentIndex];
-                                 NSDictionary *selectedDict = [self dataForIndex:indexPath];
-                                 [_objects[currentIndex.section] addObject: selectedDict];
-                                 [_objects[indexPath.section] removeObjectAtIndex: indexPath.row];
-                                 [self.tableView moveRowAtIndexPath: indexPath toIndexPath: [NSIndexPath indexPathForRow:1 inSection:0]];
-                                 [self.tableView reloadData];
-                                 
-                                 [_objects[indexPath.section] addObject: currentDict];
-                                 [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
-                                 [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
-                             }];
-    }
-    
-    UIAlertAction* editNameButton = [UIAlertAction
+    UIAlertAction *makeCurrentButton = [UIAlertAction
+                                        actionWithTitle:@"Make Current"
+                                        style:UIAlertActionStyleDefault
+                                        handler:^(UIAlertAction * action) {
+                                            NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                            UIAlertController *popAlert = [UIAlertController
+                                                                           alertControllerWithTitle:@"Unsaved Changes"
+                                                                           message:[NSString stringWithFormat:@"%@ will be overriden. Would you like to save it first?", currentDict[@"Name"]]
+                                                                           preferredStyle:
+                                                                           UIAlertControllerStyleAlert];
+                                            [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+                                                NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+                                                dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+                                                textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
+                                            }];
+                                            UIAlertAction* popCancelButton = [UIAlertAction
+                                                                              actionWithTitle:@"Cancel"
+                                                                              style:UIAlertActionStyleDefault
+                                                                              handler:^(UIAlertAction * action) {
+                                                                              }];
+                                            UIAlertAction* popContinueButton = [UIAlertAction
+                                                                                actionWithTitle:@"Continue Anyways"
+                                                                                style:UIAlertActionStyleDefault
+                                                                                handler:^(UIAlertAction * action) {
+                                                                                    NSIndexPath *currentIndex = [NSIndexPath indexPathForRow:0 inSection:0];
+                                                                                    NSMutableDictionary *selectedDict = [[self dataForIndex:indexPath] copy];
+                                                                                    [_objects[currentIndex.section] addObject: [selectedDict mutableCopy]];
+                                                                                    [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation: UITableViewRowAnimationNone];
+                                                                                    
+                                                                                    [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
+                                                                                    [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
+                                                                                     UITableViewRowAnimationFade];
+                                                                                    [self saveObjects];
+                                                                                }];
+                                            UIAlertAction* popOkButton = [UIAlertAction
+                                                                          actionWithTitle:@"Save"
+                                                                          style:UIAlertActionStyleDefault
+                                                                          handler:^(UIAlertAction * action) {
+                                                                              currentDict[@"Name"] = popAlert.textFields[0].text;
+                                                                              [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                                                              NSIndexPath *currentIndex = [NSIndexPath indexPathForRow:0 inSection:0];
+                                                                              NSMutableDictionary *selectedDict = [[self dataForIndex:indexPath] copy];
+                                                                              [_objects[currentIndex.section] addObject: [selectedDict mutableCopy]];
+                                                                              [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                                                              
+                                                                              [_objects[indexPath.section] addObject: currentDict];
+                                                                              [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
+                                                                              [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
+                                                                              [self saveObjects];
+                                                                          }];
+                                            if ([currentDict[@"Name"] containsString:@"Unsaved -"]) {
+                                                [popAlert addAction:popOkButton];
+                                                [popAlert addAction:popContinueButton];
+                                                [popAlert addAction:popCancelButton];
+                                                [self presentViewController:popAlert animated:YES completion:nil];
+                                            } else {
+                                                NSIndexPath *currentIndex = [NSIndexPath indexPathForRow:0 inSection:0];
+                                                NSMutableDictionary *selectedDict = [[self dataForIndex:indexPath] copy];
+                                                [_objects[currentIndex.section] addObject: [selectedDict mutableCopy]];
+                                                [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:1 inSection:0]] withRowAnimation: UITableViewRowAnimationNone];
+                                                
+                                                [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
+                                                [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
+                                                 UITableViewRowAnimationFade];
+                                                [self saveObjects];
+                                            }
+                                        }];
+    UIAlertAction *editNameButton = [UIAlertAction
                                     actionWithTitle:@"Edit Name"
                                     style:UIAlertActionStyleDefault
                                     handler:^(UIAlertAction * action) {
@@ -166,13 +245,59 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                           actionWithTitle:@"OK"
                                                                           style:UIAlertActionStyleDefault
                                                                           handler:^(UIAlertAction * action) {
-                                                                              [_objects[indexPath.section] replaceObjectAtIndex: indexPath.row withObject:popAlert.textFields[0].text];
-                                                                              [self.tableView reloadData];
+                                                                              NSArray *section = _objects[indexPath.section];
+                                                                              NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                                                              NSMutableDictionary *row = section[indexPath.row];
+                                                                              if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
+                                                                                  currentDict[@"Name"] = popAlert.textFields[0].text;
+                                                                              }
+                                                                              row[@"Name"] = popAlert.textFields[0].text;
+                                                                              [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                                                              [self saveObjects];
                                                                           }];
                                         [popAlert addAction:popCancelButton];
                                         [popAlert addAction:popOkButton];
                                         [self presentViewController:popAlert animated:YES completion:nil];
                                     }];
+    UIAlertAction *saveButton = [UIAlertAction
+                                     actionWithTitle:@"Save"
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         UIAlertController *popAlert = [UIAlertController
+                                                                        alertControllerWithTitle:@"New Preference"
+                                                                        message:nil
+                                                                        preferredStyle:
+                                                                        UIAlertControllerStyleAlert];
+                                         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+                                             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+                                             dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+                                             textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
+                                         }];
+                                         UIAlertAction* popCancelButton = [UIAlertAction
+                                                                           actionWithTitle:@"Cancel"
+                                                                           style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction * action) {
+                                                                           }];
+                                         UIAlertAction* popOkButton = [UIAlertAction
+                                                                       actionWithTitle:@"OK"
+                                                                       style:UIAlertActionStyleDefault
+                                                                       handler:^(UIAlertAction * action) {
+                                                                           NSString *inputText = popAlert.textFields[0].text;
+                                                                           NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] init];
+                                                                           dataDict[@"Name"] = inputText;
+                                                                           dataDict[@"Plist"] = [self activePlist];
+                                                                           [_objects.lastObject addObject: dataDict];
+                                                                           [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                                                           NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                                                           currentDict[@"Name"] = inputText;
+                                                                           
+                                                                           [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                                                           [self saveObjects];
+                                                                       }];
+                                         [popAlert addAction:popCancelButton];
+                                         [popAlert addAction:popOkButton];
+                                         [self presentViewController:popAlert animated:YES completion:nil];
+                                     }];
     
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
@@ -182,7 +307,8 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    }];
     
     if(indexPath.section > 0)[alert addAction:makeCurrentButton];
-    [alert addAction:editNameButton];
+    if(indexPath.section > 0)[alert addAction:editNameButton];
+    if(indexPath.section == 0)[alert addAction:saveButton];
     [alert addAction:cancelButton];
     
     [self presentViewController:alert animated:YES completion:nil];

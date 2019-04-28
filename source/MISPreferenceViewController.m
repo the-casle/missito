@@ -119,9 +119,6 @@
     if (@available(iOS 11, tvOS 11, *)) {
         [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]
                        error:nil];
-        NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-        [currentDict[@"Plist"] writeToURL:[NSURL fileURLWithPath:[self pathToPreferenceFromBundleID:self.bundleID]]
-                       error:nil];
     }
 }
 
@@ -132,6 +129,21 @@
     dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
     NSString *formated = [NSString stringWithFormat:@"Unsaved - %@",[dateFormatter stringFromDate: prefEditDate]];
     return formated;
+}
+
+-(NSString *) singleNameForName:(NSString *)name{
+    for(int i = 1; [self doesNameExist:name]; i++){
+        name = [NSString stringWithFormat:@"%@ (%i)", name, i];
+    }
+    return name;
+}
+
+-(BOOL) doesNameExist:(NSString *)name{
+    BOOL doesExist = NO;
+    for(NSDictionary *dict in _objects.lastObject){
+        doesExist = ([dict[@"Name"] isEqualToString:name]) ? YES : NO;
+    }
+    return doesExist;
 }
 
 
@@ -194,7 +206,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                           actionWithTitle:@"Save"
                                                                           style:UIAlertActionStyleDefault
                                                                           handler:^(UIAlertAction * action) {
-                                                                              currentDict[@"Name"] = popAlert.textFields[0].text;
+                                                                              currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
                                                                               [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
                                                                               NSIndexPath *currentIndex = [NSIndexPath indexPathForRow:0 inSection:0];
                                                                               NSMutableDictionary *selectedDict = [[self dataForIndex:indexPath] copy];
@@ -249,9 +261,9 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                               NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
                                                                               NSMutableDictionary *row = section[indexPath.row];
                                                                               if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
-                                                                                  currentDict[@"Name"] = popAlert.textFields[0].text;
+                                                                                  currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
                                                                               }
-                                                                              row[@"Name"] = popAlert.textFields[0].text;
+                                                                              row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
                                                                               [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
                                                                               [self saveObjects];
                                                                           }];
@@ -282,7 +294,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                        actionWithTitle:@"OK"
                                                                        style:UIAlertActionStyleDefault
                                                                        handler:^(UIAlertAction * action) {
-                                                                           NSString *inputText = popAlert.textFields[0].text;
+                                                                           NSString *inputText = [self singleNameForName: popAlert.textFields[0].text];
                                                                            NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] init];
                                                                            dataDict[@"Name"] = inputText;
                                                                            dataDict[@"Plist"] = [self activePlist];

@@ -2,7 +2,6 @@
 #import "MISSerializationController.h"
 #import <malloc/malloc.h>
 
-#define DIRECTORY_PATH @"/var/mobile/Library/Missito"
 
 @implementation MISDetailViewController {
 	NSMutableArray *_objects;
@@ -26,9 +25,8 @@
 
 - (void)export:(id)sender {
     NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
-    NSString *pathToFile = [NSString stringWithFormat:@"%@/%@", DIRECTORY_PATH, self.bundleID];
-    
-    shareDict[@"PathToFile"] = pathToFile;
+
+    shareDict[@"BundleID"] = self.bundleID;
     shareDict[@"BaseDict"] = self.shareDict;
     NSString *serialDict = [MISSerializationController serializeDictionary:shareDict];
     

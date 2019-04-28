@@ -2,7 +2,6 @@
 #import "MISDetailViewController.h"
 #import "MISSerializationController.h"
 
-#define DIRECTORY_PATH @"/var/mobile/Library/Missito"
 
 @implementation MISPreferenceViewController {
 	NSMutableArray *_objects;
@@ -34,6 +33,14 @@
     } else {
         _objects = savedObjects;
     }
+    for(NSMutableDictionary *importDict in [self importArray]){
+        [_objects.lastObject addObject: importDict];
+        [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+        [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self saveObjects];
+    }
+    
     [self updateCurrentCell];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -161,6 +168,19 @@
     }
 }
 
+-(NSArray *) importArray{
+    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:IMPORTED_DIRECTORY_PATH
+                                                                        error:NULL];
+    NSMutableArray *importDicts = [[NSMutableArray alloc] init];
+    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSString *filename = (NSString *)obj;
+        if ([filename isEqualToString:self.bundleID]) {
+            [importDicts addObject: [NSDictionary dictionaryWithContentsOfFile:[IMPORTED_DIRECTORY_PATH stringByAppendingPathComponent:filename]]];
+            [[NSFileManager defaultManager] removeItemAtPath:[IMPORTED_DIRECTORY_PATH stringByAppendingPathComponent:filename] error:nil];
+        }
+    }];
+    return importDicts;
+}
 
 #pragma mark - Table View Delegate
 

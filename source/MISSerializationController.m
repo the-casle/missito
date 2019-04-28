@@ -12,7 +12,7 @@
     return [plist base64EncodedStringWithOptions:kNilOptions];
 }
 
-+(NSDictionary*)deserializeDictionary:(NSString *)string {
++(NSDictionary*)deserializeDictionaryFromString:(NSString *)string {
     NSData *plist = [[NSData alloc] initWithBase64EncodedString:string options:kNilOptions];
     return [NSPropertyListSerialization propertyListWithData:plist
                                                      options:kNilOptions

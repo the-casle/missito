@@ -75,6 +75,7 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
     if(indexPath.section > 0) cell.accessoryType = UITableViewCellAccessoryDetailButton;
+    else cell.accessoryType = UITableViewCellAccessoryNone;
 
     NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
     cell.textLabel.text = dataDict[@"Name"];
@@ -149,6 +150,8 @@
 
 -(NSString *) singleNameForName:(NSString *)name{
     for(int i = 1; [self doesNameExist:name]; i++){
+        NSString *removeString = [NSString stringWithFormat:@" (%i)", i - 1];
+        name = [name stringByReplacingOccurrencesOfString:removeString withString:@""];
         name = [NSString stringWithFormat:@"%@ (%i)", name, i];
     }
     return name;
@@ -157,7 +160,12 @@
 -(BOOL) doesNameExist:(NSString *)name{
     BOOL doesExist = NO;
     for(NSDictionary *dict in _objects.lastObject){
-        doesExist = ([dict[@"Name"] isEqualToString:name]) ? YES : NO;
+        if([dict[@"Name"] isEqualToString:name]){
+            doesExist = YES;
+            return doesExist;
+        } else {
+            doesExist = NO;
+        }
     }
     return doesExist;
 }

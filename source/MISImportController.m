@@ -4,19 +4,20 @@
 
 @implementation MISImportController {
 	NSMutableArray *_objects;
+    NSString *_savedBundlePath;
 }
 
 - (void)loadView {
 	[super loadView];
     
     BOOL isDir;
-    NSString *importPath = [NSString stringWithFormat:@"%@/object.plist", IMPORT_DIRECTORY_PATH];
+    _savedBundlePath = [NSString stringWithFormat:@"%@/SavedBundles.plist", IMPORT_DIRECTORY_PATH];
     NSFileManager *fileManager= [NSFileManager defaultManager];
     if(![fileManager fileExistsAtPath:IMPORT_DIRECTORY_PATH isDirectory:&isDir]){
         [fileManager createDirectoryAtPath:IMPORT_DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
     }
     
-    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:importPath];
+    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_savedBundlePath];
     if(!savedObjects){
         _objects = [[NSMutableArray alloc] init];
     } else {
@@ -140,8 +141,7 @@
 
 -(void) saveObjects{
     if (@available(iOS 11, tvOS 11, *)) {
-        NSString *importPath = [NSString stringWithFormat:@"%@/object.plist", IMPORT_DIRECTORY_PATH];
-        [_objects writeToURL:[NSURL fileURLWithPath:importPath]
+        [_objects writeToURL:[NSURL fileURLWithPath:_savedBundlePath]
                        error:nil];
     }
 }

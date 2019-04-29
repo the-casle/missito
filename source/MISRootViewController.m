@@ -15,12 +15,12 @@
     [self.navigationItem setTitle: @"Preferences"];
     
     NSMutableArray *nameArray = [[NSMutableArray alloc] init];
-    for(NSString *preference in [self preferenceArray]){
+    for(NSString *preference in [self allBundles]){
         [nameArray addObject:[self nameFromBundleID:preference]];
     }
     NSArray *sortedName = [nameArray sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
     for(NSString *name in sortedName){
-        for(NSString *bundle in [self preferenceArray]){
+        for(NSString *bundle in [self allBundles]){
             NSString *nameFromBundle = [self nameFromBundleID:bundle];
             if([nameFromBundle isEqualToString:name]){
                 [_objects addObject:@{@"Name":nameFromBundle, @"BundleID":bundle}];
@@ -64,7 +64,27 @@
 
 #pragma mark - Utility
 
--(NSArray *) preferenceArray{
+-(NSMutableArray *) allBundles {
+    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:DIRECTORY_PATH
+                                                                        error:NULL];
+    NSMutableArray *devPrefs = [self preferenceArray];
+    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSString *filename = (NSString *)obj;
+        BOOL isNew = YES;
+        for(NSString *preferenceId in [self preferenceArray]){
+            if([preferenceId isEqualToString: filename]){
+                isNew = NO;
+                break;
+            }
+        }
+        if(isNew){
+            [devPrefs addObject:filename];
+        }
+    }];
+    return devPrefs;
+}
+
+-(NSMutableArray *) preferenceArray{
     NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_PATH
                                                                         error:NULL];
     NSMutableArray *devPrefs = [[NSMutableArray alloc] init];

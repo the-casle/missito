@@ -41,47 +41,67 @@
     [self saveObjects];
 }
 - (void)import:(id)sender {
-    UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Import"
-                                message:@"Will import from pasteboard."
-                                preferredStyle:
-                                UIAlertControllerStyleAlert];
     
-    UIAlertAction *continueButton = [UIAlertAction
-                                     actionWithTitle:@"OK"
-                                     style:UIAlertActionStyleDefault
-                                     handler:^(UIAlertAction * action) {
-                                         UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
-                                         NSString *pasteString = generalPasteboard.string;
-                                         
-                                         NSError *error = nil;
-                                         NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
-                                         NSArray *matches = [detector matchesInString:pasteString
-                                                                              options:0
-                                                                                range:NSMakeRange(0, [pasteString length])];
-                                         if(matches.count > 0){
-                                             // do link stuff
-                                         } else {
-                                             NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
-                                             
-                                             MISSharingController *shareCont = [MISSharingController sharedInstance];
-                                             for(NSMutableDictionary *dict in deserialArray){
-                                                 [shareCont.importArray addObject: dict];
+    UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
+    NSString *pasteString = generalPasteboard.string;
+    
+    NSError *error = nil;
+    NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+    NSArray *matches = [detector matchesInString:pasteString
+                                         options:0
+                                           range:NSMakeRange(0, [pasteString length])];
+    
+    NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
+    if(deserialArray){
+        UIAlertController *alert = [UIAlertController
+                                    alertControllerWithTitle:@"Import"
+                                    message:@"Will import from pasteboard."
+                                    preferredStyle:
+                                    UIAlertControllerStyleAlert];
+        
+        UIAlertAction *continueButton = [UIAlertAction
+                                         actionWithTitle:@"OK"
+                                         style:UIAlertActionStyleDefault
+                                         handler:^(UIAlertAction * action) {
+                                             if(matches.count > 0){
+                                                 // do link stuff
+                                             } else {
+                                                 MISSharingController *shareCont = [MISSharingController sharedInstance];
+                                                 for(NSMutableDictionary *dict in deserialArray){
+                                                     [shareCont.importArray addObject: dict];
+                                                 }
                                              }
-                                         }
-                                         [self addImported];
-                                     }];
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:@"Cancel"
-                                   style:UIAlertActionStyleDefault
-                                   handler:^(UIAlertAction * action) {
-                                       //Handle no, thanks button
-                                   }];
+                                             [self addImported];
+                                         }];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:@"Cancel"
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                           //Handle no, thanks button
+                                       }];
+        
+        [alert addAction:cancelButton];
+        [alert addAction:continueButton];
+        
+        [self presentViewController:alert animated:YES completion:nil];
+    } else {
+        UIAlertController *alert = [UIAlertController
+                                    alertControllerWithTitle:@"Error"
+                                    message:@"Cannot import from pasteboard. Check that you've selected the entire string."
+                                    preferredStyle:
+                                    UIAlertControllerStyleAlert];
+        UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:@"Dismiss"
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                           //Handle no, thanks button
+                                       }];
+        
+        [alert addAction:cancelButton];
+        
+        [self presentViewController:alert animated:YES completion:nil];
+    }
     
-    [alert addAction:cancelButton];
-    [alert addAction:continueButton];
-    
-    [self presentViewController:alert animated:YES completion:nil];
 }
 
 -(void) saveObjects{

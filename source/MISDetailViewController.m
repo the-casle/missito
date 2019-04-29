@@ -33,7 +33,7 @@
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
     [sharingCont.exportArray addObject:shareDict];
     [self.tabBarController setSelectedIndex:2];
-    [self.navigationController popToRootViewControllerAnimated:NO];
+    [self.navigationController popViewControllerAnimated:NO];
 }
 #pragma mark - Table View Data Source
 

@@ -35,7 +35,9 @@
         _objects = savedObjects;
     }
     for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
-        [_objects.lastObject addObject: importDict];
+        NSMutableDictionary *dict = [importDict mutableCopy];
+        [_objects.lastObject addObject: dict];
+        dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
         
         [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -74,7 +76,7 @@
 	}
     if(indexPath.section > 0) cell.accessoryType = UITableViewCellAccessoryDetailButton;
 
-    NSDictionary *dataDict = [self dataForIndex: indexPath];
+    NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
     cell.textLabel.text = dataDict[@"Name"];
 	return cell;
 }

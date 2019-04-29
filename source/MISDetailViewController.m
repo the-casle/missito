@@ -1,5 +1,6 @@
 #import "MISDetailViewController.h"
 #import "MISSerializationController.h"
+#import "MISSharingController.h"
 #import <malloc/malloc.h>
 
 
@@ -20,7 +21,7 @@
     
     self.tableView.allowsSelection = NO;
     
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(export:)];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Export" style: UIBarButtonItemStylePlain target:self action:@selector(export:)];
 }
 
 - (void)export:(id)sender {
@@ -28,14 +29,11 @@
 
     shareDict[@"BundleID"] = self.bundleID;
     shareDict[@"BaseDict"] = self.shareDict;
-    NSString *serialDict = [MISSerializationController serializeDictionary:shareDict];
     
-    NSArray *activityItems = @[serialDict];
-    NSArray *applicationActivities = nil;
-    NSArray *excludeActivities = @[UIActivityTypePrint];
-    UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
-    activityController.excludedActivityTypes = excludeActivities;
-    [self presentViewController:activityController animated:YES completion:nil];
+    MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    [sharingCont.exportArray addObject:shareDict];
+    [self.tabBarController setSelectedIndex:2];
+    [self.navigationController popToRootViewControllerAnimated:NO];
 }
 #pragma mark - Table View Data Source
 

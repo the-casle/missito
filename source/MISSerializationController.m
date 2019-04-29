@@ -2,8 +2,8 @@
 
 @implementation MISSerializationController
 
-+(NSString*)serializeDictionary:(NSDictionary *)dictionary {
-    NSMutableDictionary *mutable = [dictionary mutableCopy];
++(NSString*)serializeArray:(NSMutableArray *)array {
+    NSMutableArray *mutable = [array mutableCopy];
     
     NSData *plist = [NSPropertyListSerialization dataWithPropertyList:mutable
                                                                format:NSPropertyListBinaryFormat_v1_0
@@ -12,7 +12,7 @@
     return [plist base64EncodedStringWithOptions:kNilOptions];
 }
 
-+(NSDictionary*)deserializeDictionaryFromString:(NSString *)string {
++(NSMutableArray*)deserializeArrayFromString:(NSString *)string {
     NSData *plist = [[NSData alloc] initWithBase64EncodedString:string options:kNilOptions];
     return [NSPropertyListSerialization propertyListWithData:plist
                                                      options:kNilOptions

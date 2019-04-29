@@ -25,10 +25,12 @@
     if(matches.count > 0){
         // do link stuff
     } else {
-        NSDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:pasteString];
+        NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
 
         MISSharingController *shareCont = [MISSharingController sharedInstance];
-        [shareCont.importArray addObject: deserialDict];
+        for(NSMutableDictionary *dict in deserialArray){
+            [shareCont.importArray addObject: dict];
+        }
     }
 }
 @end

@@ -24,11 +24,21 @@
 -(NSMutableArray *) arrayOfImportsForBundle:(NSString *) bundle{
     NSMutableArray *tempArray = [[NSMutableArray alloc] init];
     for(int i = 0; i < self.importArray.count; i++){
-        NSDictionary *sharingDict = self.importArray[i];
+        NSMutableDictionary *sharingDict = self.importArray[i];
         if([sharingDict[@"BundleID"] isEqualToString:bundle]){
             [tempArray addObject:sharingDict[@"BaseDict"]];
             [self.importArray removeObjectAtIndex:i];
         }
+    }
+    return tempArray;
+}
+
+-(NSMutableArray *) arrayOfExportsAndClear{
+    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+    for(int i = 0; i < self.exportArray.count; i++){
+        NSMutableDictionary *sharingDict = self.exportArray[i];
+        [tempArray addObject:sharingDict];
+        [self.exportArray removeObjectAtIndex:i];
     }
     return tempArray;
 }

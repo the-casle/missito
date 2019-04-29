@@ -4,7 +4,7 @@
 
 @interface MISSerializationController : NSObject
 
-+(NSString*)serializeDictionary:(NSDictionary *)dictionary;
-+(NSDictionary*)deserializeDictionaryFromString:(NSString *)string;
++(NSString*)serializeArray:(NSMutableArray *)array;
++(NSMutableArray*)deserializeArrayFromString:(NSString *)string;
 
 @end

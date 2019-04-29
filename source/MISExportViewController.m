@@ -10,36 +10,24 @@
 	[super loadView];
     _objects = [[NSMutableArray alloc] init];
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
-    for(NSMutableDictionary *dict in [sharingCont arrayOfExportsAndClear]){
+    for(NSMutableDictionary *dict in sharingCont.queueArray){
         [_objects addObject: dict];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
     
     self.tableView.allowsSelection = NO;
-    [self.navigationItem setTitle: @"Export"];
+    [self.navigationItem setTitle: @"Queue"];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(share:)];
-    
-}
-
-- (void)viewWillAppear:(BOOL)animated{
-    [super viewWillAppear:animated];
-    
-    MISSharingController *sharingCont = [MISSharingController sharedInstance];
-    for(NSMutableDictionary *dict in [sharingCont arrayOfExportsAndClear ]){
-        [_objects addObject: dict];
-        [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:_objects.count - 1 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-    }
 }
 
 - (void)share:(id)sender {
     if(_objects.count > 0){
-        NSString *serialDict = [MISSerializationController serializeArray:_objects];
-        NSArray *activityItems = @[serialDict];
-        NSArray *applicationActivities = nil;
-        NSArray *excludeActivities = @[UIActivityTypePrint];
-        UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
-        activityController.excludedActivityTypes = excludeActivities;
-        [self presentViewController:activityController animated:YES completion:nil];
+        MISSharingController *sharingCont = [MISSharingController sharedInstance];
+        sharingCont.bundleArray = [sharingCont.queueArray mutableCopy];
+        [self.tabBarController setSelectedIndex:1];
+        [self.navigationController popViewControllerAnimated:NO];
+        _objects = [[NSMutableArray alloc] init];
+        [self saveObjects];
     } else {
         UIAlertController *alert = [UIAlertController
                                     alertControllerWithTitle:@"No Data"
@@ -58,6 +46,11 @@
         
         [self presentViewController:alert animated:YES completion:nil];
     }
+}
+
+-(void) saveObjects{
+    MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    sharingCont.queueArray = _objects;
 }
 #pragma mark - Table View Data Source
 
@@ -86,6 +79,7 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	[_objects removeObjectAtIndex:indexPath.row];
+    [self saveObjects];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 

@@ -2,13 +2,15 @@
 #import "MISSerializationController.h"
 
 @implementation MISSharingController
-@synthesize exportArray = _exportArray;
+@synthesize bundleArray = _bundleArray;
 @synthesize importArray = _importArray;
+@synthesize queueArray = _queueArray;
 
 -(instancetype) init{
     if(self = [super init]){
         _importArray = [[NSMutableArray alloc] init];
-        _exportArray = [[NSMutableArray alloc] init];
+        _queueArray = [[NSMutableArray alloc] init];
+        _bundleArray = [[NSMutableArray alloc] init];
     }
     return self;
 }
@@ -33,14 +35,5 @@
     return tempArray;
 }
 
--(NSMutableArray *) arrayOfExportsAndClear{
-    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-    for(int i = 0; i < self.exportArray.count; i++){
-        NSMutableDictionary *sharingDict = self.exportArray[i];
-        [tempArray addObject:sharingDict];
-        [self.exportArray removeObjectAtIndex:i];
-    }
-    return tempArray;
-}
 
 @end

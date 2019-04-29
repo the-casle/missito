@@ -30,8 +30,8 @@
     shareDict[@"BundleID"] = self.bundleID;
     shareDict[@"BaseDict"] = self.shareDict;
     
-    MISSharingController *sharingCont = [MISSharingController sharedInstance];
-    [sharingCont.exportArray addObject:shareDict];
+    //MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    //[sharingCont.exportArray addObject:shareDict];
     [self.tabBarController setSelectedIndex:2];
     [self.navigationController popViewControllerAnimated:NO];
 }

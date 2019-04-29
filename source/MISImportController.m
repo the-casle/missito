@@ -24,82 +24,118 @@
     }
 
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.navigationItem setTitle:@"Bundles"];
     
-    [self.navigationItem setTitle:@"Import"];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(import:)];
+    [self transferFromQueue];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Import" style:UIBarButtonItemStylePlain target:self action:@selector(import:)];
 }
 
--(void) addImported{
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self transferFromQueue];
+}
+
+-(void) transferFromQueue{
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    if(sharingCont.bundleArray.count > 0){
+        [self includingArray:sharingCont.bundleArray];
+    }
+    sharingCont.bundleArray = [[NSMutableArray alloc] init];
+}
+
+-(void) includingArray:(NSMutableArray *) array{
     NSMutableDictionary *holdDict = [[NSMutableDictionary alloc] init];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
     dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
     holdDict[@"Name"] = [NSString stringWithFormat:@"Bundle - %@",[dateFormatter stringFromDate: [NSDate date]]];
-    holdDict[@"Array"] = sharingCont.importArray;
+    holdDict[@"Name"] = [self singleNameForName:holdDict[@"Name"]];
+    holdDict[@"Array"] = array;
     [_objects addObject:holdDict];
-    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self saveObjects];
+}
+
+-(void) addImported{
+    MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    [self includingArray: sharingCont.importArray];
 }
 - (void)import:(id)sender {
     
     UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
     NSString *pasteString = generalPasteboard.string;
     
-    NSError *error = nil;
-    NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
-    NSArray *matches = [detector matchesInString:pasteString
-                                         options:0
-                                           range:NSMakeRange(0, [pasteString length])];
-    if(matches.count > 0){
-        // do link stuff
-    }
-    NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
-    if(deserialArray){
-        UIAlertController *alert = [UIAlertController
-                                    alertControllerWithTitle:@"Import"
-                                    message:@"Will import from pasteboard."
-                                    preferredStyle:
-                                    UIAlertControllerStyleAlert];
-        
-        UIAlertAction *continueButton = [UIAlertAction
-                                         actionWithTitle:@"OK"
-                                         style:UIAlertActionStyleDefault
-                                         handler:^(UIAlertAction * action) {
-                                             MISSharingController *shareCont = [MISSharingController sharedInstance];
-                                             for(NSMutableDictionary *dict in deserialArray){
-                                                 [shareCont.importArray addObject: dict];
-                                             }
-                                             [self addImported];
-                                         }];
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:@"Cancel"
-                                       style:UIAlertActionStyleDefault
-                                       handler:^(UIAlertAction * action) {
-                                           //Handle no, thanks button
-                                       }];
-        
-        [alert addAction:cancelButton];
-        [alert addAction:continueButton];
-        
-        [self presentViewController:alert animated:YES completion:nil];
+    UIAlertController *alert = nil;
+    UIAlertAction *continueButton = nil;
+    UIAlertAction* cancelButton = nil;
+    
+    if(pasteString){
+        NSError *error = nil;
+        NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+        NSArray *matches = [detector matchesInString:pasteString
+                                             options:0
+                                               range:NSMakeRange(0, [pasteString length])];
+        if(matches.count > 0){
+            // do link stuff
+        }
+        NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
+        if(deserialArray){
+            alert = [UIAlertController
+                                        alertControllerWithTitle:@"Import"
+                                        message:@"Will import from pasteboard."
+                                        preferredStyle:
+                                        UIAlertControllerStyleAlert];
+            
+            continueButton = [UIAlertAction
+                                             actionWithTitle:@"OK"
+                                             style:UIAlertActionStyleDefault
+                                             handler:^(UIAlertAction * action) {
+                                                 MISSharingController *shareCont = [MISSharingController sharedInstance];
+                                                 for(NSMutableDictionary *dict in deserialArray){
+                                                     [shareCont.importArray addObject: dict];
+                                                 }
+                                                 [self addImported];
+                                             }];
+            cancelButton = [UIAlertAction
+                                           actionWithTitle:@"Cancel"
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                               //Handle no, thanks button
+                                           }];
+            
+            [alert addAction:cancelButton];
+            [alert addAction:continueButton];
+        } else {
+            alert = [UIAlertController
+                                        alertControllerWithTitle:@"Error"
+                                        message:@"Cannot import from pasteboard. Check that you've selected the entire string."
+                                        preferredStyle:
+                                        UIAlertControllerStyleAlert];
+            cancelButton = [UIAlertAction
+                                           actionWithTitle:@"Dismiss"
+                                           style:UIAlertActionStyleDefault
+                                           handler:^(UIAlertAction * action) {
+                                               //Handle no, thanks button
+                                           }];
+            
+            [alert addAction:cancelButton];
+        }
     } else {
-        UIAlertController *alert = [UIAlertController
-                                    alertControllerWithTitle:@"Error"
-                                    message:@"Cannot import from pasteboard. Check that you've selected the entire string."
-                                    preferredStyle:
-                                    UIAlertControllerStyleAlert];
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:@"Dismiss"
-                                       style:UIAlertActionStyleDefault
-                                       handler:^(UIAlertAction * action) {
-                                           //Handle no, thanks button
-                                       }];
+        alert = [UIAlertController
+                 alertControllerWithTitle:@"Error"
+                 message:@"Cannot import from pasteboard. Nothing is in the pasteboard."
+                 preferredStyle:
+                 UIAlertControllerStyleAlert];
+        cancelButton = [UIAlertAction
+                        actionWithTitle:@"Dismiss"
+                        style:UIAlertActionStyleDefault
+                        handler:^(UIAlertAction * action) {
+                            //Handle no, thanks button
+                        }];
         
         [alert addAction:cancelButton];
-        
-        [self presentViewController:alert animated:YES completion:nil];
     }
     
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 -(void) saveObjects{

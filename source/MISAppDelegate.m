@@ -1,7 +1,6 @@
 #import "MISAppDelegate.h"
 #import "MISRootViewController.h"
 #import "MISImportController.h"
-#import "MISExportViewController.h"
 
 @implementation MISAppDelegate
 
@@ -23,18 +22,9 @@
     if (@available(iOS 11, tvOS 11, *)) {
         _importController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
-    _importController.title = @"Import";
+    _importController.title = @"Bundles";
     _importController.view.backgroundColor = [UIColor whiteColor];
     [localViewControllersArray addObject:_importController];
-    
-    _exportController = [[UINavigationController alloc] initWithRootViewController:[[MISExportViewController alloc] init]];
-    if (@available(iOS 11, tvOS 11, *)) {
-        _exportController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
-    }
-    _exportController.title = @"Export";
-    _exportController.view.backgroundColor = [UIColor whiteColor];
-    [localViewControllersArray addObject:_exportController];
-    
     
     tabBars.viewControllers = localViewControllersArray;
     tabBars.view.autoresizingMask=(UIViewAutoresizingFlexibleHeight);

@@ -1,7 +1,7 @@
 #import "MISPreferenceViewController.h"
-#import "MISDetailViewController.h"
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
+#import "MISExportViewController.h"
 
 
 @implementation MISPreferenceViewController {
@@ -194,12 +194,37 @@
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    MISDetailViewController *detailController = [[MISDetailViewController alloc] init];
-    [detailController.navigationItem setTitle: cell.textLabel.text];
-    detailController.bundleID = self.bundleID;
-    detailController.shareDict = [self dataForIndex:indexPath];
-    [self.navigationController pushViewController:detailController animated:YES];
+    UIAlertController *popAlert = [UIAlertController
+                                   alertControllerWithTitle:@"Edit Name"
+                                   message:nil
+                                   preferredStyle:
+                                   UIAlertControllerStyleAlert];
+    [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        textField.text = cell.textLabel.text;
+    }];
+    UIAlertAction* popCancelButton = [UIAlertAction
+                                      actionWithTitle:@"Cancel"
+                                      style:UIAlertActionStyleDefault
+                                      handler:^(UIAlertAction * action) {
+                                      }];
+    UIAlertAction* popOkButton = [UIAlertAction
+                                  actionWithTitle:@"OK"
+                                  style:UIAlertActionStyleDefault
+                                  handler:^(UIAlertAction * action) {
+                                      NSArray *section = _objects[indexPath.section];
+                                      NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                      NSMutableDictionary *row = section[indexPath.row];
+                                      if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
+                                          currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
+                                      }
+                                      row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
+                                      [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                      [self saveObjects];
+                                  }];
+    [popAlert addAction:popCancelButton];
+    [popAlert addAction:popOkButton];
+    [self presentViewController:popAlert animated:YES completion:nil];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -320,42 +345,22 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                 [self saveObjects];
                                             }
                                         }];
-    UIAlertAction *editNameButton = [UIAlertAction
-                                    actionWithTitle:@"Edit Name"
-                                    style:UIAlertActionStyleDefault
-                                    handler:^(UIAlertAction * action) {
-                                        UIAlertController *popAlert = [UIAlertController
-                                                                     alertControllerWithTitle:@"Edit Name"
-                                                                     message:nil
-                                                                     preferredStyle:
-                                                                     UIAlertControllerStyleAlert];
-                                        [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-                                            UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-                                            textField.text = cell.textLabel.text;
-                                        }];
-                                        UIAlertAction* popCancelButton = [UIAlertAction
-                                                                       actionWithTitle:@"Cancel"
-                                                                       style:UIAlertActionStyleDefault
-                                                                       handler:^(UIAlertAction * action) {
-                                                                       }];
-                                        UIAlertAction* popOkButton = [UIAlertAction
-                                                                          actionWithTitle:@"OK"
-                                                                          style:UIAlertActionStyleDefault
-                                                                          handler:^(UIAlertAction * action) {
-                                                                              NSArray *section = _objects[indexPath.section];
-                                                                              NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-                                                                              NSMutableDictionary *row = section[indexPath.row];
-                                                                              if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
-                                                                                  currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
-                                                                              }
-                                                                              row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
-                                                                              [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
-                                                                              [self saveObjects];
-                                                                          }];
-                                        [popAlert addAction:popCancelButton];
-                                        [popAlert addAction:popOkButton];
-                                        [self presentViewController:popAlert animated:YES completion:nil];
-                                    }];
+    UIAlertAction *queueButton = [UIAlertAction
+                                     actionWithTitle:@"Add to Queue"
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         
+                                         NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
+                                         
+                                         shareDict[@"BundleID"] = self.bundleID;
+                                         shareDict[@"BaseDict"] = [self dataForIndex:indexPath];
+                                         
+                                         MISSharingController *sharingCont = [MISSharingController sharedInstance];
+                                         [sharingCont.queueArray addObject:shareDict];
+                                         
+                                         MISExportViewController *queueController = [[MISExportViewController alloc] init];
+                                         [self.navigationController pushViewController:queueController animated:YES];
+                                     }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
                                    style:UIAlertActionStyleDefault
@@ -364,7 +369,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    }];
     
     if(indexPath.section > 0)[alert addAction:makeCurrentButton];
-    if(indexPath.section > 0)[alert addAction:editNameButton];
+    if(indexPath.section > 0)[alert addAction:queueButton];
     [alert addAction:cancelButton];
     
     [self presentViewController:alert animated:YES completion:nil];

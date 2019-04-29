@@ -1,6 +1,6 @@
 #define PREFERNCE_PATH @"/private/var/mobile/Library/Preferences"
 #define DIRECTORY_PATH @"/var/mobile/Library/Missito"
-#define IMPORTED_DIRECTORY_PATH @"/var/mobile/Library/Missito/Imported"
+#define IMPORT_DIRECTORY_PATH @"/var/mobile/Library/Missito/Import"
 
 @interface MISSerializationController : NSObject
 

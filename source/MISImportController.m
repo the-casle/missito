@@ -9,7 +9,19 @@
 - (void)loadView {
 	[super loadView];
     
-    _objects = [[NSMutableArray alloc] init];
+    BOOL isDir;
+    NSString *importPath = [NSString stringWithFormat:@"%@/object.plist", IMPORT_DIRECTORY_PATH];
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    if(![fileManager fileExistsAtPath:IMPORT_DIRECTORY_PATH isDirectory:&isDir]){
+        [fileManager createDirectoryAtPath:IMPORT_DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
+    }
+    
+    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:importPath];
+    if(!savedObjects){
+        _objects = [[NSMutableArray alloc] init];
+    } else {
+        _objects = savedObjects;
+    }
 
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     
@@ -17,10 +29,16 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(import:)];
 }
 
--(void) refreshCells{
+-(void) addImported{
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
-    [_objects addObject:sharingCont.importArray];
+    NSMutableDictionary *holdDict = [[NSMutableDictionary alloc] init];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+    dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+    holdDict[@"Name"] = [NSString stringWithFormat:@"Bundle - %@",[dateFormatter stringFromDate: [NSDate date]]];
+    holdDict[@"Array"] = sharingCont.importArray;
+    [_objects addObject:holdDict];
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self saveObjects];
 }
 - (void)import:(id)sender {
     UIAlertController *alert = [UIAlertController
@@ -51,7 +69,7 @@
                                                  [shareCont.importArray addObject: dict];
                                              }
                                          }
-                                         [self refreshCells];
+                                         [self addImported];
                                      }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
@@ -64,6 +82,14 @@
     [alert addAction:continueButton];
     
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+-(void) saveObjects{
+    if (@available(iOS 11, tvOS 11, *)) {
+        NSString *importPath = [NSString stringWithFormat:@"%@/object.plist", IMPORT_DIRECTORY_PATH];
+        [_objects writeToURL:[NSURL fileURLWithPath:importPath]
+                       error:nil];
+    }
 }
 
 #pragma mark - Table View Data Source
@@ -84,14 +110,15 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
     
-    // _objects[indexPath.row]
-    cell.textLabel.text = @"Import";
+    NSMutableDictionary *row = _objects[indexPath.row];
+    cell.textLabel.text = row[@"Name"];
 	return cell;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	[_objects removeObjectAtIndex:indexPath.row];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+     [self saveObjects];
 }
 
 #pragma mark - Utility
@@ -111,7 +138,7 @@
 
 -(BOOL) doesNameExist:(NSString *)name{
     BOOL doesExist = NO;
-    for(NSDictionary *dict in _objects.lastObject){
+    for(NSDictionary *dict in _objects){
         if([dict[@"Name"] isEqualToString:name]){
             doesExist = YES;
             return doesExist;
@@ -127,6 +154,68 @@
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    UIAlertController *alert = [UIAlertController
+                                alertControllerWithTitle:@"Options"
+                                message:nil
+                                preferredStyle:
+                                UIAlertControllerStyleActionSheet];
+    
+    UIAlertAction *activeButton = [UIAlertAction
+                                        actionWithTitle:@"Enable"
+                                        style:UIAlertActionStyleDefault
+                                        handler:^(UIAlertAction * action) {
+                                            NSMutableDictionary *row = _objects[indexPath.row];
+                                            NSMutableArray *holdArray = row[@"Array"];
+                                            for(NSMutableDictionary *holdDict in holdArray){
+                                                NSString *bundleId = holdDict[@"BundleID"];
+                                                NSMutableDictionary *baseDict = holdDict[@"BaseDict"];
+                                                NSLog(@"missito_APP | %@ %@", bundleId, baseDict);
+                                                [MISSerializationController overideBundle:bundleId withDict: baseDict];
+                                            }
+                                        }];
+    UIAlertAction *editNameButton = [UIAlertAction
+                                     actionWithTitle:@"Edit Name"
+                                     style:UIAlertActionStyleDefault
+                                     handler:^(UIAlertAction * action) {
+                                         UIAlertController *popAlert = [UIAlertController
+                                                                        alertControllerWithTitle:@"Edit Name"
+                                                                        message:nil
+                                                                        preferredStyle:
+                                                                        UIAlertControllerStyleAlert];
+                                         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+                                             UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+                                             textField.text = cell.textLabel.text;
+                                         }];
+                                         UIAlertAction* popCancelButton = [UIAlertAction
+                                                                           actionWithTitle:@"Cancel"
+                                                                           style:UIAlertActionStyleDefault
+                                                                           handler:^(UIAlertAction * action) {
+                                                                           }];
+                                         UIAlertAction* popOkButton = [UIAlertAction
+                                                                       actionWithTitle:@"OK"
+                                                                       style:UIAlertActionStyleDefault
+                                                                       handler:^(UIAlertAction * action) {
+                                                                           NSMutableDictionary *row = _objects[indexPath.row];
+                                                                           row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
+                                                                           [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                                                           [self saveObjects];
+                                                                       }];
+                                         [popAlert addAction:popCancelButton];
+                                         [popAlert addAction:popOkButton];
+                                         [self presentViewController:popAlert animated:YES completion:nil];
+                                     }];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:@"Cancel"
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                       //Handle no, thanks button
+                                   }];
+    
+    [alert addAction:activeButton];
+    [alert addAction:editNameButton];
+    [alert addAction:cancelButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 @end

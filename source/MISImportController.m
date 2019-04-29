@@ -109,6 +109,7 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
+    cell.accessoryType = UITableViewCellAccessoryDetailButton;
     
     NSMutableDictionary *row = _objects[indexPath.row];
     cell.textLabel.text = row[@"Name"];
@@ -151,6 +152,32 @@
 
 #pragma mark - Table View Delegate
 
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    NSString *message = nil;
+    NSMutableDictionary *row = _objects[indexPath.row];
+    NSMutableArray *holdArray = row[@"Array"];
+    for(NSMutableDictionary *holdDict in holdArray){
+        NSString *bundleId = holdDict[@"BundleID"];
+        if(!message) message = bundleId;
+        else message = [NSString stringWithFormat:@"%@\n%@", message, bundleId];
+    }
+
+    UIAlertController *alert = [UIAlertController
+                                alertControllerWithTitle:@"BundleIDs"
+                                message:message
+                                preferredStyle: UIAlertControllerStyleAlert];
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:@"Dismiss"
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                       //Handle no, thanks button
+                                   }];
+    
+    [alert addAction:cancelButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -169,7 +196,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                             for(NSMutableDictionary *holdDict in holdArray){
                                                 NSString *bundleId = holdDict[@"BundleID"];
                                                 NSMutableDictionary *baseDict = holdDict[@"BaseDict"];
-                                                NSLog(@"missito_APP | %@ %@", bundleId, baseDict);
                                                 [MISSerializationController overideBundle:bundleId withDict: baseDict];
                                             }
                                         }];

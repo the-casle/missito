@@ -17,10 +17,10 @@
     
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
-    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Compile" style:UIBarButtonItemStylePlain target:self action:@selector(share:)];
+    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Compile" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
 }
 
-- (void)share:(id)sender {
+- (void)compile:(id)sender {
     if(_objects.count > 0){
         MISSharingController *sharingCont = [MISSharingController sharedInstance];
         sharingCont.bundleArray = [sharingCont.queueArray mutableCopy];

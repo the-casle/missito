@@ -207,17 +207,16 @@
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    NSString *message = nil;
+    NSString *message = @"Bundles are groups of preferences identified by their BundleID:\n";
     NSMutableDictionary *row = _objects[indexPath.row];
     NSMutableArray *holdArray = row[@"Array"];
     for(NSMutableDictionary *holdDict in holdArray){
         NSString *bundleId = holdDict[@"BundleID"];
-        if(!message) message = bundleId;
-        else message = [NSString stringWithFormat:@"%@\n%@", message, bundleId];
+        message = [NSString stringWithFormat:@"%@\n%@", message, bundleId];
     }
 
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"BundleIDs"
+                                alertControllerWithTitle:@"Details"
                                 message:message
                                 preferredStyle: UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction
@@ -242,7 +241,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                 UIAlertControllerStyleActionSheet];
     
     UIAlertAction *activeButton = [UIAlertAction
-                                        actionWithTitle:@"Enable"
+                                        actionWithTitle:@"Activate"
                                         style:UIAlertActionStyleDefault
                                         handler:^(UIAlertAction * action) {
                                             NSMutableDictionary *row = _objects[indexPath.row];

@@ -40,6 +40,23 @@
         UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
         activityController.excludedActivityTypes = excludeActivities;
         [self presentViewController:activityController animated:YES completion:nil];
+    } else {
+        UIAlertController *alert = [UIAlertController
+                                    alertControllerWithTitle:@"No Data"
+                                    message:@"There really isn't anything to export."
+                                    preferredStyle:
+                                    UIAlertControllerStyleAlert];
+        
+        UIAlertAction* cancelButton = [UIAlertAction
+                                       actionWithTitle:@"Fine"
+                                       style:UIAlertActionStyleDefault
+                                       handler:^(UIAlertAction * action) {
+                                           //Handle no, thanks button
+                                       }];
+        
+        [alert addAction:cancelButton];
+        
+        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 #pragma mark - Table View Data Source
@@ -70,24 +87,6 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	[_objects removeObjectAtIndex:indexPath.row];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
-#pragma mark - Utility
-
--(NSArray *) preferenceArray{
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_PATH
-                                                                        error:NULL];
-    NSMutableArray *devPrefs = [[NSMutableArray alloc] init];
-    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *filename = (NSString *)obj;
-        NSString *extension = [[filename pathExtension] lowercaseString];
-        if ([filename rangeOfString:@"com.apple"].location == NSNotFound && [extension isEqualToString:@"plist"]) {
-            if([filename componentsSeparatedByString:@"."].count >= 4){
-                [devPrefs addObject:filename];
-            }
-        }
-    }];
-    return devPrefs;
 }
 
 #pragma mark - Table View Delegate

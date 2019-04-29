@@ -36,13 +36,11 @@
     }
     for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
         NSMutableDictionary *dict = [importDict mutableCopy];
-        [_objects.lastObject addObject: dict];
         dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
+        [_objects.lastObject addObject: dict];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
-        
-        [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self saveObjects];
     }
+    [self saveObjects];
     
     [self updateCurrentCell];
     
@@ -56,18 +54,16 @@
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
-- (void)viewWillAppear:(BOOL)animated{
-    [super viewWillAppear:animated];
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
     
     for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
         NSMutableDictionary *dict = [importDict mutableCopy];
-        [_objects.lastObject addObject: dict];
         dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
+        [_objects.lastObject addObject: dict];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
-        
-        [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
-        [self saveObjects];
     }
+    [self saveObjects];
 }
 
 #pragma mark - Table View Data Source

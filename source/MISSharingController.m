@@ -23,14 +23,44 @@
     return sharedInstance;
 }
 
+-(void) writeToFileImportArray:(NSMutableArray *)array{
+    BOOL isDir;
+    NSString *path = [NSString stringWithFormat:@"%@/%@", DICT_BUNDLE_DIRECTORY_PATH, @"dicts.plist"];
+    NSFileManager *fileManager= [NSFileManager defaultManager];
+    if(![fileManager fileExistsAtPath:path isDirectory:&isDir]){
+        [fileManager createDirectoryAtPath:DICT_BUNDLE_DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
+        if (@available(iOS 11, tvOS 11, *)) {
+            [array writeToURL:[NSURL fileURLWithPath:path]
+                           error:nil];
+        }
+    } else {
+        NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
+        for(NSMutableDictionary *dict in array){
+            [oldArray addObject:dict];
+        }
+        if (@available(iOS 11, tvOS 11, *)) {
+            [oldArray writeToURL:[NSURL fileURLWithPath:path]
+                        error:nil];
+        }
+    }
+}
+
 -(NSMutableArray *) arrayOfImportsForBundle:(NSString *) bundle{
     NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-    for(int i = 0; i < self.importArray.count; i++){
-        NSMutableDictionary *sharingDict = self.importArray[i];
+    
+    NSString *path = [NSString stringWithFormat:@"%@/%@", DICT_BUNDLE_DIRECTORY_PATH, @"dicts.plist"];
+    NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
+    int count = oldArray.count - 1;
+    for(int i = 0; i < count; i++){
+        NSMutableDictionary *sharingDict = oldArray.firstObject;
         if([sharingDict[@"BundleID"] isEqualToString:bundle]){
             [tempArray addObject:sharingDict[@"BaseDict"]];
-            [self.importArray removeObjectAtIndex:i];
+            [oldArray removeObjectAtIndex:0];
         }
+    }
+    if (@available(iOS 11, tvOS 11, *)) {
+        [oldArray writeToURL:[NSURL fileURLWithPath:path]
+                       error:nil];
     }
     return tempArray;
 }

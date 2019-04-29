@@ -23,6 +23,7 @@
     } else {
         _objects = savedObjects;
     }
+    
 
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self.navigationItem setTitle:@"Bundles"];
@@ -58,10 +59,13 @@
     });
 }
 
--(void) addImported{
-    MISSharingController *sharingCont = [MISSharingController sharedInstance];
-    [self includingArray: sharingCont.importArray];
-    sharingCont.importArray = [[NSMutableArray alloc] init];
+-(void) addImported:(NSMutableDictionary *)dict{
+    dict = [dict mutableCopy];
+    dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
+    [_objects addObject:dict];
+    
+    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self saveObjects];
 }
 - (void)import:(id)sender {
     
@@ -81,8 +85,8 @@
         if(matches.count > 0){
             // do link stuff
         }
-        NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
-        if(deserialArray){
+        NSMutableDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:pasteString];
+        if(deserialDict){
             alert = [UIAlertController
                                         alertControllerWithTitle:@"Import"
                                         message:@"Will import from pasteboard."
@@ -94,10 +98,9 @@
                                              style:UIAlertActionStyleDefault
                                              handler:^(UIAlertAction * action) {
                                                  MISSharingController *shareCont = [MISSharingController sharedInstance];
-                                                 for(NSMutableDictionary *dict in deserialArray){
-                                                     [shareCont.importArray addObject: dict];
-                                                 }
-                                                 [self addImported];
+                                                 NSMutableArray *array = deserialDict[@"Array"];
+                                                 [shareCont writeToFileImportArray:array];
+                                                 [self addImported:deserialDict];
                                              }];
             cancelButton = [UIAlertAction
                                            actionWithTitle:@"Cancel"
@@ -210,7 +213,7 @@
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    NSString *message = @"Bundles are groups of preferences identified by their BundleID:\n";
+    NSString *message = @"Bundles are groups of preferences:\n";
     NSMutableDictionary *row = _objects[indexPath.row];
     NSMutableArray *holdArray = row[@"Array"];
     for(NSMutableDictionary *holdDict in holdArray){
@@ -291,8 +294,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    actionWithTitle:@"Share"
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * action) {
-                                       NSDictionary *row = _objects[indexPath.row];
-                                       NSString *serialDict = [MISSerializationController serializeArray:row[@"Array"]];
+                                       NSString *serialDict = [MISSerializationController serializeDictionary:_objects[indexPath.row]];
                                        NSArray *activityItems = @[serialDict];
                                        NSArray *applicationActivities = nil;
                                        NSArray *excludeActivities = @[UIActivityTypePrint];

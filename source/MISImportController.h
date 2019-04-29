@@ -1,2 +1,2 @@
-@interface MISImportController : UIViewController
+@interface MISImportController : UITableViewController
 @end

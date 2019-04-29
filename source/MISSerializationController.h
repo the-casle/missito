@@ -6,5 +6,5 @@
 
 +(NSString*)serializeArray:(NSMutableArray *)array;
 +(NSMutableArray*)deserializeArrayFromString:(NSString *)string;
-
++(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict;
 @end

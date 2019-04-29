@@ -56,6 +56,20 @@
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    
+    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
+        NSMutableDictionary *dict = [importDict mutableCopy];
+        [_objects.lastObject addObject: dict];
+        dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
+        [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
+        
+        [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self saveObjects];
+    }
+}
+
 #pragma mark - Table View Data Source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -134,9 +148,7 @@
     }
     
     NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    NSString *onlyBundle = [self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-    CFPreferencesSetMultiple((__bridge CFDictionaryRef)currentDict[@"Plist"], nil, (__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    [MISSerializationController overideBundle:self.bundleID withDict:currentDict];
 }
 
 -(NSString *) unsavedPrefernceString{

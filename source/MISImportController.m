@@ -51,9 +51,11 @@
     holdDict[@"Name"] = [NSString stringWithFormat:@"Bundle - %@",[dateFormatter stringFromDate: [NSDate date]]];
     holdDict[@"Name"] = [self singleNameForName:holdDict[@"Name"]];
     holdDict[@"Array"] = array;
-    [_objects addObject:holdDict];
-    [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self saveObjects];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{ // Make sure the animation is there.
+        [_objects addObject:holdDict];
+        [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+        [self saveObjects];
+    });
 }
 
 -(void) addImported{

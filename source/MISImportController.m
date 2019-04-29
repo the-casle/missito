@@ -50,7 +50,9 @@
     NSArray *matches = [detector matchesInString:pasteString
                                          options:0
                                            range:NSMakeRange(0, [pasteString length])];
-    
+    if(matches.count > 0){
+        // do link stuff
+    }
     NSMutableArray *deserialArray = [MISSerializationController deserializeArrayFromString:pasteString];
     if(deserialArray){
         UIAlertController *alert = [UIAlertController
@@ -63,13 +65,9 @@
                                          actionWithTitle:@"OK"
                                          style:UIAlertActionStyleDefault
                                          handler:^(UIAlertAction * action) {
-                                             if(matches.count > 0){
-                                                 // do link stuff
-                                             } else {
-                                                 MISSharingController *shareCont = [MISSharingController sharedInstance];
-                                                 for(NSMutableDictionary *dict in deserialArray){
-                                                     [shareCont.importArray addObject: dict];
-                                                 }
+                                             MISSharingController *shareCont = [MISSharingController sharedInstance];
+                                             for(NSMutableDictionary *dict in deserialArray){
+                                                 [shareCont.importArray addObject: dict];
                                              }
                                              [self addImported];
                                          }];

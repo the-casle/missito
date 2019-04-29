@@ -61,7 +61,9 @@
 
 -(void) addImported:(NSMutableDictionary *)dict{
     dict = [dict mutableCopy];
+    NSLog(@"missito_APP | %@", dict[@"Name"]);
     dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
+    NSLog(@"missito_APP | %@", dict[@"Name"]);
     [_objects addObject:dict];
     
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
@@ -189,10 +191,10 @@
 }
 
 -(NSString *) singleNameForName:(NSString *)name{
-    for(int i = 1; [self doesNameExist:name]; i++){
-        NSString *removeString = [NSString stringWithFormat:@" (%i)", i - 1];
+    for(int i = 0; [self doesNameExist:name]; i++){
+        NSString *removeString = [NSString stringWithFormat:@" (%i)", i];
         name = [name stringByReplacingOccurrencesOfString:removeString withString:@""];
-        name = [NSString stringWithFormat:@"%@ (%i)", name, i];
+        name = [NSString stringWithFormat:@"%@ (%i)", name, i + 1];
     }
     return name;
 }

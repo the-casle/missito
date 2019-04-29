@@ -157,10 +157,10 @@
 }
 
 -(NSString *) singleNameForName:(NSString *)name{
-    for(int i = 1; [self doesNameExist:name]; i++){
-        NSString *removeString = [NSString stringWithFormat:@" (%i)", i - 1];
+    for(int i = 0; [self doesNameExist:name]; i++){
+        NSString *removeString = [NSString stringWithFormat:@" (%i)", i];
         name = [name stringByReplacingOccurrencesOfString:removeString withString:@""];
-        name = [NSString stringWithFormat:@"%@ (%i)", name, i];
+        name = [NSString stringWithFormat:@"%@ (%i)", name, i + 1];
     }
     return name;
 }

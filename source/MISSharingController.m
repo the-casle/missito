@@ -50,7 +50,7 @@
     
     NSString *path = [NSString stringWithFormat:@"%@/%@", DICT_BUNDLE_DIRECTORY_PATH, @"dicts.plist"];
     NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
-    int count = oldArray.count - 1;
+    int count = oldArray.count;
     for(int i = 0; i < count; i++){
         NSMutableDictionary *sharingDict = oldArray.firstObject;
         if([sharingDict[@"BundleID"] isEqualToString:bundle]){

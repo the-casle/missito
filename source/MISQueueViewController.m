@@ -30,13 +30,13 @@
         [self saveObjects];
     } else {
         UIAlertController *alert = [UIAlertController
-                                    alertControllerWithTitle:@"No Data"
-                                    message:@"There really isn't anything to compile."
+                                    alertControllerWithTitle:@"Nothing to Compile"
+                                    message:@"Try adding to the queue first."
                                     preferredStyle:
                                     UIAlertControllerStyleAlert];
         
         UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:@"Fine"
+                                       actionWithTitle:@"Dismiss"
                                        style:UIAlertActionStyleDefault
                                        handler:^(UIAlertAction * action) {
                                            //Handle no, thanks button

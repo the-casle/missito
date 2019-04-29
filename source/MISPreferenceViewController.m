@@ -233,7 +233,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     if(indexPath.section == 0){
         UIAlertController *popAlert = [UIAlertController
-                                       alertControllerWithTitle:@"New Preference"
+                                       alertControllerWithTitle:@"New Save"
                                        message:nil
                                        preferredStyle:
                                        UIAlertControllerStyleAlert];

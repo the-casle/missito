@@ -1,7 +1,7 @@
 #import "MISPreferenceViewController.h"
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
-#import "MISExportViewController.h"
+#import "MISQueueViewController.h"
 
 
 @implementation MISPreferenceViewController {
@@ -358,7 +358,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                          MISSharingController *sharingCont = [MISSharingController sharedInstance];
                                          [sharingCont.queueArray addObject:shareDict];
                                          
-                                         MISExportViewController *queueController = [[MISExportViewController alloc] init];
+                                         MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
                                          [self.navigationController pushViewController:queueController animated:YES];
                                      }];
     UIAlertAction* cancelButton = [UIAlertAction

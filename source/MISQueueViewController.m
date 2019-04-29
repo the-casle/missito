@@ -1,8 +1,8 @@
-#import "MISExportViewController.h"
+#import "MISQueueViewController.h"
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 
-@implementation MISExportViewController {
+@implementation MISQueueViewController {
 	NSMutableArray *_objects;
 }
 

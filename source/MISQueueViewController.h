@@ -1,0 +1,3 @@
+@interface MISQueueViewController : UITableViewController
+
+@end

@@ -1,8 +1,8 @@
-#import "MISImportController.h"
+#import "MISBundleViewController.h"
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 
-@implementation MISImportController {
+@implementation MISBundleViewController {
 	NSMutableArray *_objects;
     NSString *_savedBundlePath;
 }
@@ -61,6 +61,7 @@
 -(void) addImported{
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
     [self includingArray: sharingCont.importArray];
+    sharingCont.importArray = [[NSMutableArray alloc] init];
 }
 - (void)import:(id)sender {
     
@@ -125,7 +126,7 @@
     } else {
         alert = [UIAlertController
                  alertControllerWithTitle:@"Error"
-                 message:@"Cannot import from pasteboard. Nothing is in the pasteboard."
+                 message:@"Cannot import from pasteboard. Pasteboard is empty."
                  preferredStyle:
                  UIAlertControllerStyleAlert];
         cancelButton = [UIAlertAction

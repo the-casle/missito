@@ -1,7 +1,7 @@
 #import "MISRootViewController.h"
 #import "MISPreferenceViewController.h"
 #import "MISSerializationController.h"
-#import "MISExportViewController.h"
+#import "MISQueueViewController.h"
 
 @implementation MISRootViewController {
 	NSMutableArray *_objects;
@@ -33,7 +33,7 @@
 }
 
 -(void) queueButton:(id)sender{
-    MISExportViewController *queueController = [[MISExportViewController alloc] init];
+    MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
     [self.navigationController pushViewController:queueController animated:YES];
 }
 #pragma mark - Table View Data Source

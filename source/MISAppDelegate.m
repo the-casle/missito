@@ -1,6 +1,6 @@
 #import "MISAppDelegate.h"
 #import "MISRootViewController.h"
-#import "MISImportController.h"
+#import "MISBundleViewController.h"
 
 @implementation MISAppDelegate
 
@@ -18,13 +18,13 @@
     
     [localViewControllersArray addObject:_rootViewController];
     
-    _importController = [[UINavigationController alloc] initWithRootViewController:[[MISImportController alloc] init]];
+    _bundleViewController = [[UINavigationController alloc] initWithRootViewController:[[MISBundleViewController alloc] init]];
     if (@available(iOS 11, tvOS 11, *)) {
-        _importController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
+        _bundleViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
-    _importController.title = @"Bundles";
-    _importController.view.backgroundColor = [UIColor whiteColor];
-    [localViewControllersArray addObject:_importController];
+    _bundleViewController.title = @"Bundles";
+    _bundleViewController.view.backgroundColor = [UIColor whiteColor];
+    [localViewControllersArray addObject:_bundleViewController];
     
     tabBars.viewControllers = localViewControllersArray;
     tabBars.view.autoresizingMask=(UIViewAutoresizingFlexibleHeight);

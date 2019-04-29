@@ -1,0 +1,2 @@
+@interface MISBundleViewController : UITableViewController
+@end

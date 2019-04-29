@@ -1,3 +1,0 @@
-@interface MISExportViewController : UITableViewController
-
-@end

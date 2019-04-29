@@ -32,13 +32,15 @@
 }
 
 - (void)share:(id)sender {
-    NSString *serialDict = [MISSerializationController serializeArray:_objects];
-    NSArray *activityItems = @[serialDict];
-    NSArray *applicationActivities = nil;
-    NSArray *excludeActivities = @[UIActivityTypePrint];
-    UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
-    activityController.excludedActivityTypes = excludeActivities;
-    [self presentViewController:activityController animated:YES completion:nil];
+    if(_objects.count > 0){
+        NSString *serialDict = [MISSerializationController serializeArray:_objects];
+        NSArray *activityItems = @[serialDict];
+        NSArray *applicationActivities = nil;
+        NSArray *excludeActivities = @[UIActivityTypePrint];
+        UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+        activityController.excludedActivityTypes = excludeActivities;
+        [self presentViewController:activityController animated:YES completion:nil];
+    }
 }
 #pragma mark - Table View Data Source
 

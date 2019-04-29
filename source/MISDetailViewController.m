@@ -56,10 +56,6 @@
 	return cell;
 }
 
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-	[_objects removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
-}
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     switch (section) {
@@ -81,18 +77,8 @@
 
 #pragma mark - Table View Delegate
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	[tableView deselectRowAtIndexPath:indexPath animated:YES];
-    /*
-    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    MISImportController *secondController = [[MISImportController alloc] init];
-    [secondController.navigationItem setTitle: cell.textLabel.text];
-    
-    CGFloat red = arc4random_uniform(256) / 255.0;
-    CGFloat green = arc4random_uniform(256) / 255.0;
-    CGFloat blue = arc4random_uniform(256) / 255.0;
-    secondController.view.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
-    [self.navigationController pushViewController:secondController animated:YES];*/
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    return NO;
 }
 
 @end

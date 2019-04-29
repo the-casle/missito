@@ -189,9 +189,11 @@
     detailController.shareDict = [self dataForIndex:indexPath];
     [self.navigationController pushViewController:detailController animated:YES];
 }
+
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     return indexPath.section > 0 ? YES : NO;
 }
+
 - (void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];

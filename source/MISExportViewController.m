@@ -17,7 +17,7 @@
     
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(share:)];
+    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Compile" style:UIBarButtonItemStylePlain target:self action:@selector(share:)];
 }
 
 - (void)share:(id)sender {
@@ -31,7 +31,7 @@
     } else {
         UIAlertController *alert = [UIAlertController
                                     alertControllerWithTitle:@"No Data"
-                                    message:@"There really isn't anything to export."
+                                    message:@"There really isn't anything to compile."
                                     preferredStyle:
                                     UIAlertControllerStyleAlert];
         

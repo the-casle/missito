@@ -284,6 +284,20 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                          [popAlert addAction:popOkButton];
                                          [self presentViewController:popAlert animated:YES completion:nil];
                                      }];
+    
+    UIAlertAction *shareButton = [UIAlertAction
+                                   actionWithTitle:@"Share"
+                                   style:UIAlertActionStyleDefault
+                                   handler:^(UIAlertAction * action) {
+                                       NSDictionary *row = _objects[indexPath.row];
+                                       NSString *serialDict = [MISSerializationController serializeArray:row[@"Array"]];
+                                       NSArray *activityItems = @[serialDict];
+                                       NSArray *applicationActivities = nil;
+                                       NSArray *excludeActivities = @[UIActivityTypePrint];
+                                       UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+                                       activityController.excludedActivityTypes = excludeActivities;
+                                       [self presentViewController:activityController animated:YES completion:nil];
+                                   }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
                                    style:UIAlertActionStyleDefault
@@ -293,6 +307,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     [alert addAction:activeButton];
     [alert addAction:editNameButton];
+    [alert addAction:shareButton];
     [alert addAction:cancelButton];
     
     [self presentViewController:alert animated:YES completion:nil];

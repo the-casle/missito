@@ -157,13 +157,10 @@
 }
 
 -(NSString *) singleNameForName:(NSString *)name{
-    for(int i = 1; [self doesNameExist:name]; i++){
-        unichar end = [name characterAtIndex:(name.length-2)];
-        if(end>='0' && end<='9'){
-            NSString *removeString = [NSString stringWithFormat:@" (%c)", end];
-            name = [name stringByReplacingOccurrencesOfString:removeString withString:@""];
-            name = [NSString stringWithFormat:@"%@ (%i)", name, i];
-        }
+    for(int i = 0; [self doesNameExist:name]; i++){
+        NSString *removeString = [NSString stringWithFormat:@" (%i)", i];
+        name = [name stringByReplacingOccurrencesOfString:removeString withString:@""];
+        name = [NSString stringWithFormat:@"%@ (%i)", name, i + 1];
     }
     return name;
 }

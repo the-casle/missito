@@ -89,8 +89,8 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	[_objects removeObjectAtIndex:indexPath.row];
-    [self saveObjects];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self saveObjects];
     [self updateBadgeCount];
 }
 

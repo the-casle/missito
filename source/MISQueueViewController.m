@@ -14,7 +14,7 @@
         [_objects addObject: dict];
         [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
-    
+    [self updateBadgeCount];
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
     self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Compile" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
@@ -24,6 +24,7 @@
     if(_objects.count > 0){
         MISSharingController *sharingCont = [MISSharingController sharedInstance];
         sharingCont.bundleArray = [sharingCont.queueArray mutableCopy];
+        self.navigationController.tabBarItem.badgeValue = nil;
         [self.tabBarController setSelectedIndex:1];
         [self.navigationController popViewControllerAnimated:NO];
         _objects = [[NSMutableArray alloc] init];
@@ -52,6 +53,15 @@
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
     sharingCont.queueArray = _objects;
 }
+
+-(void) updateBadgeCount {
+    if(_objects.count > 0){
+        self.navigationController.tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)_objects.count];
+    } else {
+        self.navigationController.tabBarItem.badgeValue = nil;
+    }
+}
+
 #pragma mark - Table View Data Source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -81,6 +91,7 @@
 	[_objects removeObjectAtIndex:indexPath.row];
     [self saveObjects];
 	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self updateBadgeCount];
 }
 
 #pragma mark - Table View Delegate

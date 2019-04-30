@@ -2,6 +2,7 @@
 #import "MISPreferenceViewController.h"
 #import "MISSerializationController.h"
 #import "MISQueueViewController.h"
+#import "MISBadgeBarButtonItem.h"
 
 @implementation MISRootViewController {
 	NSMutableArray *_objects;
@@ -29,7 +30,13 @@
             }
         }
     }
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Queue" style:UIBarButtonItemStylePlain target:self action:@selector(queueButton:)];
+    self.navigationItem.rightBarButtonItem = [[MISBadgeBarButtonItem alloc] initWithTitle:@"Queue" style:UIBarButtonItemStylePlain target:self action:@selector(queueButton:)];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    MISBadgeBarButtonItem *badgeBar = (MISBadgeBarButtonItem *)self.navigationItem.rightBarButtonItem;
+    badgeBar.badgeValue = self.navigationController.tabBarItem.badgeValue;
 }
 
 -(void) queueButton:(id)sender{

@@ -46,24 +46,42 @@
 }
 
 -(NSMutableArray *) arrayOfImportsForBundle:(NSString *) bundle{
-    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-    
     NSString *path = [NSString stringWithFormat:@"%@/%@", DICT_BUNDLE_DIRECTORY_PATH, @"dicts.plist"];
-    NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
-    int count = oldArray.count;
-    for(int i = 0; i < count; i++){
-        NSMutableDictionary *sharingDict = oldArray.firstObject;
-        if([sharingDict[@"BundleID"] isEqualToString:bundle]){
-            [tempArray addObject:sharingDict[@"BaseDict"]];
-            [oldArray removeObjectAtIndex:0];
+    /*NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
+    NSMutableArray *returnArray = [NSMutableArray arrayWithContentsOfFile:path];
+    NSMutableArray *discardedItems = [NSMutableArray array];
+    for (NSMutableDictionary *sharingDict in oldArray) {
+        NSLog(@"missito_APP | %@ and %@", sharingDict[@"BundleID"], bundle);
+        if(![sharingDict[@"BundleID"] isEqualToString:bundle]){
+            [discardedItems addObject:sharingDict];
         }
     }
+    */
+    
+    NSMutableIndexSet *discardedItems = [NSMutableIndexSet indexSet];
+    NSMutableIndexSet *keepItems = [NSMutableIndexSet indexSet];
+    NSUInteger index = 0;
+    NSMutableArray *oldArray = [NSMutableArray arrayWithContentsOfFile:path];
+    NSMutableArray *returnArray =[oldArray mutableCopy];
+    for (NSMutableDictionary *sharingDict in oldArray) {
+        if([sharingDict[@"BundleID"] isEqualToString:bundle]){
+            [keepItems addIndex:index];
+            NSLog(@"missito_APP | %@", sharingDict[@"Name"]);
+        } else {
+            [discardedItems addIndex:index];
+        }
+        index++;
+    }
+    [returnArray removeObjectsAtIndexes:discardedItems];
+    [oldArray removeObjectsAtIndexes:keepItems];
     if (@available(iOS 11, tvOS 11, *)) {
         [oldArray writeToURL:[NSURL fileURLWithPath:path]
                        error:nil];
     }
-    return tempArray;
+    NSMutableArray *baseArray = [[NSMutableArray alloc] init];
+    for(NSMutableDictionary *dict in returnArray){
+        [baseArray addObject:dict[@"BaseDict"]];
+    }
+    return baseArray;
 }
-
-
 @end

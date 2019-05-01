@@ -3,12 +3,10 @@
 
 @implementation MISSharingController
 @synthesize bundleArray = _bundleArray;
-@synthesize importArray = _importArray;
 @synthesize queueArray = _queueArray;
 
 -(instancetype) init{
     if(self = [super init]){
-        _importArray = [[NSMutableArray alloc] init];
         _queueArray = [[NSMutableArray alloc] init];
         _bundleArray = [[NSMutableArray alloc] init];
     }

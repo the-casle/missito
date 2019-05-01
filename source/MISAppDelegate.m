@@ -1,6 +1,7 @@
 #import "MISAppDelegate.h"
 #import "MISRootViewController.h"
 #import "MISBundleViewController.h"
+#import "MISSettingsViewController.h"
 
 @implementation MISAppDelegate
 
@@ -25,6 +26,14 @@
     _bundleViewController.title = @"Bundles";
     _bundleViewController.view.backgroundColor = [UIColor whiteColor];
     [localViewControllersArray addObject:_bundleViewController];
+    
+    _settingsViewController = [[UINavigationController alloc] initWithRootViewController:[[MISSettingsViewController alloc] init]];
+    if (@available(iOS 11, tvOS 11, *)) {
+        _settingsViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
+    }
+    _settingsViewController.title = @"Settings";
+    _settingsViewController.view.backgroundColor = [UIColor whiteColor];
+    [localViewControllersArray addObject:_settingsViewController];
     
     tabBars.viewControllers = localViewControllersArray;
     tabBars.view.autoresizingMask=(UIViewAutoresizingFlexibleHeight);

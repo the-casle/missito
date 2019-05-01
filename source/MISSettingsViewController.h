@@ -1,0 +1,2 @@
+@interface MISSettingsViewController : UITableViewController
+@end

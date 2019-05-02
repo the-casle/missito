@@ -1,6 +1,7 @@
 #import "MISBundleViewController.h"
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
+#import "NSTask.h"
 
 @implementation MISBundleViewController {
 	NSMutableArray *_objects;
@@ -294,8 +295,32 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    actionWithTitle:@"Share"
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * action) {
-                                       NSString *serialDict = [MISSerializationController serializeDictionary:_objects[indexPath.row]];
-                                       NSArray *activityItems = @[serialDict];
+                                       NSMutableDictionary *bundleDict =  _objects[indexPath.row];
+                                       NSString *serialDict = [MISSerializationController serializeDictionary:bundleDict];
+                                       
+                                       NSPipe *pipe = [NSPipe pipe];
+                                       NSFileHandle *file = pipe.fileHandleForReading;
+                                       
+                                       NSTask *task = [[NSTask alloc] init];
+                                       task.launchPath = @"/usr/bin/curl";
+                                       NSString *textArg = [NSString stringWithFormat:@"text=%@", serialDict];
+                                       NSString *titleArg = [NSString stringWithFormat:@"title=%@", bundleDict[@"Name"]];
+                                       NSString *expireArg = [NSString stringWithFormat:@"expire=%d", 10];
+                                       NSString *d = @"-d";
+                                       task.arguments = @[d, textArg, d, titleArg, d, @"name=Missito-Share", d, expireArg, @"https://pastecode.xyz/api/create"];
+                                       task.standardOutput = pipe;
+                                       
+                                       [task launch];
+                                       
+                                       NSData *data = [file readDataToEndOfFile];
+                                       [file closeFile];
+                                       
+                                       NSString *pasteOutput = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+                                       
+                                       NSURL *url = [NSURL URLWithString:pasteOutput];
+                                       NSLog(@"missito_APP | %@",url);
+
+                                       NSArray *activityItems = @[pasteOutput];
                                        NSArray *applicationActivities = nil;
                                        NSArray *excludeActivities = @[UIActivityTypePrint];
                                        UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];

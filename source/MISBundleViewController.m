@@ -68,69 +68,72 @@
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:(_objects.count - 1) inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self saveObjects];
 }
-- (void)import:(id)sender {
-    
-    UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
-    NSString *pasteString = generalPasteboard.string;
-    
+
+-(void) handleURL:(NSURL *) url{
+    [self.tabBarController setSelectedIndex:1];
+    NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
+    NSString *identifier = urlComp.lastObject;
+    NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
+    NSURL *urlRawPaste = [NSURL URLWithString:pasteLink];
+    NSLog(@"missito_APP | %@", urlRawPaste);
+    NSURLSessionDataTask *downloadTask = [[NSURLSession sharedSession]
+                                          dataTaskWithURL:urlRawPaste completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                              NSString *pasteOutput = [NSString stringWithUTF8String:[data bytes]];
+                                              pasteOutput = [pasteOutput substringToIndex:[pasteOutput length]-7];
+                                              NSString *works = @"YnBsaXN0MDDSAQIDEFVBcnJheVROYW1loQTSBQYHD1hCYXNlRGljdFhCdW5kbGVJRNIIAgkOVVBsaXN00goLDA1eU29ydERlc2NlbmRpbmdaU29ydENvbHVtbgkQA18QF0JhY2t1cCAtIDA0LzMwLzE5IDE5OjMwXxAWcnUuZG9tby5Db2NvYVRvcC5wbGlzdF8QF0J1bmRsZSAtIDA1LzAyLzE5IDIwOjM5CA0TGBofKDE2PEFQW1xeeJEAAAAAAAABAQAAAAAAAAARAAAAAAAAAAAAAAAAAAAAqw==";
+                                              for(int i=0 ;i<[pasteOutput length]; i++) {
+                                                  if(i < ([pasteOutput length])){
+                                                      /*if([pasteOutput characterAtIndex:i] != [works characterAtIndex:i]){
+                                                          
+                                                      }*/
+                                                      NSLog(@"missito_APP | char: %i index: %i",[pasteOutput characterAtIndex:i], i );
+                                                  }
+                                                  
+                                              }
+                                              NSLog(@"missito_APP | %lu and %lu", (unsigned long)[pasteOutput length], (unsigned long)[works length]);
+                                              [self importString:pasteOutput];
+                                              NSLog(@"missito_APP | %@ and %@",pasteOutput, works);
+                                              
+                                          }];
+    [downloadTask resume];
+}
+
+
+-(void) importString:(NSString *) base64String{
+    NSMutableDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:base64String];
     UIAlertController *alert = nil;
     UIAlertAction *continueButton = nil;
-    UIAlertAction* cancelButton = nil;
+    UIAlertAction *cancelButton = nil;
     
-    if(pasteString){
-        NSError *error = nil;
-        NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
-        NSArray *matches = [detector matchesInString:pasteString
-                                             options:0
-                                               range:NSMakeRange(0, [pasteString length])];
-        if(matches.count > 0){
-            // do link stuff
-        }
-        NSMutableDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:pasteString];
-        if(deserialDict){
-            alert = [UIAlertController
-                                        alertControllerWithTitle:@"Import"
-                                        message:@"Will import from pasteboard."
-                                        preferredStyle:
-                                        UIAlertControllerStyleAlert];
-            
-            continueButton = [UIAlertAction
-                                             actionWithTitle:@"OK"
-                                             style:UIAlertActionStyleDefault
-                                             handler:^(UIAlertAction * action) {
-                                                 MISSharingController *shareCont = [MISSharingController sharedInstance];
-                                                 NSMutableArray *array = deserialDict[@"Array"];
-                                                 [shareCont writeToFileImportArray:array];
-                                                 [self addImported:deserialDict];
-                                             }];
-            cancelButton = [UIAlertAction
-                                           actionWithTitle:@"Cancel"
-                                           style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction * action) {
-                                               //Handle no, thanks button
-                                           }];
-            
-            [alert addAction:cancelButton];
-            [alert addAction:continueButton];
-        } else {
-            alert = [UIAlertController
-                                        alertControllerWithTitle:@"Error"
-                                        message:@"Cannot import from pasteboard. Check that you've selected the entire string."
-                                        preferredStyle:
-                                        UIAlertControllerStyleAlert];
-            cancelButton = [UIAlertAction
-                                           actionWithTitle:@"Dismiss"
-                                           style:UIAlertActionStyleDefault
-                                           handler:^(UIAlertAction * action) {
-                                               //Handle no, thanks button
-                                           }];
-            
-            [alert addAction:cancelButton];
-        }
+    if(deserialDict){
+        alert = [UIAlertController
+                 alertControllerWithTitle:@"Import"
+                 message:@"Importing from string."
+                 preferredStyle:
+                 UIAlertControllerStyleAlert];
+        
+        continueButton = [UIAlertAction
+                          actionWithTitle:@"OK"
+                          style:UIAlertActionStyleDefault
+                          handler:^(UIAlertAction * action) {
+                              MISSharingController *shareCont = [MISSharingController sharedInstance];
+                              NSMutableArray *array = deserialDict[@"Array"];
+                              [shareCont writeToFileImportArray:array];
+                              [self addImported:deserialDict];
+                          }];
+        cancelButton = [UIAlertAction
+                        actionWithTitle:@"Cancel"
+                        style:UIAlertActionStyleDefault
+                        handler:^(UIAlertAction * action) {
+                            //Handle no, thanks button
+                        }];
+        
+        [alert addAction:cancelButton];
+        [alert addAction:continueButton];
     } else {
         alert = [UIAlertController
                  alertControllerWithTitle:@"Error"
-                 message:@"Cannot import from pasteboard. Pasteboard is empty."
+                 message:@"Cannot import, not in the correct format."
                  preferredStyle:
                  UIAlertControllerStyleAlert];
         cancelButton = [UIAlertAction
@@ -142,8 +145,42 @@
         
         [alert addAction:cancelButton];
     }
-    
     [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)import:(id)sender {
+    
+    UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
+    NSString *pasteString = generalPasteboard.string;
+    
+    if(pasteString){
+        NSError *error = nil;
+        NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
+        NSArray *matches = [detector matchesInString:pasteString
+                                             options:0
+                                               range:NSMakeRange(0, [pasteString length])];
+        if(matches.count > 0){
+            NSURL *url = [NSURL URLWithString:pasteString];
+            [self handleURL:url];
+        } else {
+            [self importString:pasteString];
+        }
+    } else {
+        UIAlertController *alert = [UIAlertController
+                 alertControllerWithTitle:@"Error"
+                 message:@"Cannot import from pasteboard. Pasteboard is empty."
+                 preferredStyle:
+                 UIAlertControllerStyleAlert];
+        UIAlertAction *cancelButton = [UIAlertAction
+                        actionWithTitle:@"Dismiss"
+                        style:UIAlertActionStyleDefault
+                        handler:^(UIAlertAction * action) {
+                            //Handle no, thanks button
+                        }];
+        
+        [alert addAction:cancelButton];
+         [self presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 -(void) saveObjects{
@@ -297,6 +334,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    handler:^(UIAlertAction * action) {
                                        NSMutableDictionary *bundleDict =  _objects[indexPath.row];
                                        NSString *serialDict = [MISSerializationController serializeDictionary:bundleDict];
+                                       NSLog(@"missito_APP share %@",serialDict);
                                        
                                        NSPipe *pipe = [NSPipe pipe];
                                        NSFileHandle *file = pipe.fileHandleForReading;
@@ -315,12 +353,13 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                        NSData *data = [file readDataToEndOfFile];
                                        [file closeFile];
                                        
-                                       NSString *pasteOutput = [[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding];
+                                       NSString *pasteOutput = [NSString stringWithUTF8String:[data bytes]];
+                                       NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
+                                       NSString *identifier = pasteComp.lastObject;
                                        
-                                       NSURL *url = [NSURL URLWithString:pasteOutput];
-                                       NSLog(@"missito_APP | %@",url);
+                                       NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
 
-                                       NSArray *activityItems = @[pasteOutput];
+                                       NSArray *activityItems = @[shareLink];
                                        NSArray *applicationActivities = nil;
                                        NSArray *excludeActivities = @[UIActivityTypePrint];
                                        UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];

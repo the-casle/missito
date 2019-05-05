@@ -37,6 +37,16 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
 	}
     cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    cell.imageView.layer.cornerRadius = 10.0;
+    cell.imageView.clipsToBounds = YES;
+    dispatch_async(dispatch_get_global_queue(0,0), ^{
+        NSData * data = [[NSData alloc] initWithContentsOfURL: [NSURL URLWithString: @"https://twitter.com/pwn20wnd/profile_image?size=original"]];
+        if(data == nil) return;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            cell.imageView.image = [self scaleImageWithData:data proportionallyToSize:CGSizeMake(40,40)];
+            [cell setNeedsLayout];
+        });
+    });
 
     NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
     cell.textLabel.text = dataDict[@"Title"];
@@ -65,6 +75,43 @@
 -(id) dataForIndex:(NSIndexPath *) indexPath {
     NSArray *section = _objects[indexPath.section];
     return section[indexPath.row];
+}
+
+- (UIImage *)scaleImageWithData:(NSData *)imageData proportionallyToSize:(CGSize)newSize {
+    return [self scaleImage:[UIImage imageWithData:imageData] toSize:[self estimateNewSize:newSize forImage:[UIImage imageWithData:imageData]]];
+}
+- (CGSize)estimateNewSize:(CGSize)newSize forImage:(UIImage *)image
+{
+    if (image.size.width > image.size.height) {
+        newSize = CGSizeMake((image.size.width/image.size.height) * newSize.height, newSize.height);
+    } else {
+        newSize = CGSizeMake(newSize.width, (image.size.height/image.size.width) * newSize.width);
+    }
+    
+    return newSize;
+}
+- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size
+{
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
+    CGContextClearRect(context, CGRectMake(0, 0, size.width, size.height));
+    
+    if (originalImage.imageOrientation == UIImageOrientationRight) {
+        CGContextRotateCTM(context, -M_PI_2);
+        CGContextTranslateCTM(context, -size.height, 0.0f);
+        CGContextDrawImage(context, CGRectMake(0, 0, size.height, size.width), originalImage.CGImage);
+    } else {
+        CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), originalImage.CGImage);
+    }
+    
+    CGImageRef scaledImage = CGBitmapContextCreateImage(context);
+    CGColorSpaceRelease(colorSpace);
+    CGContextRelease(context);
+    
+    UIImage *image = [UIImage imageWithCGImage:scaledImage];
+    CGImageRelease(scaledImage);
+    
+    return image;
 }
 
 #pragma mark - Table View Delegate

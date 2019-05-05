@@ -79,21 +79,8 @@
     NSURLSessionDataTask *downloadTask = [[NSURLSession sharedSession]
                                           dataTaskWithURL:urlRawPaste completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
                                               NSString *pasteOutput = [NSString stringWithUTF8String:[data bytes]];
-                                              pasteOutput = [pasteOutput substringToIndex:[pasteOutput length]-7];
-                                              NSString *works = @"YnBsaXN0MDDSAQIDEFVBcnJheVROYW1loQTSBQYHD1hCYXNlRGljdFhCdW5kbGVJRNIIAgkOVVBsaXN00goLDA1eU29ydERlc2NlbmRpbmdaU29ydENvbHVtbgkQA18QF0JhY2t1cCAtIDA0LzMwLzE5IDE5OjMwXxAWcnUuZG9tby5Db2NvYVRvcC5wbGlzdF8QF0J1bmRsZSAtIDA1LzAyLzE5IDIwOjM5CA0TGBofKDE2PEFQW1xeeJEAAAAAAAABAQAAAAAAAAARAAAAAAAAAAAAAAAAAAAAqw==";
-                                              for(int i=0 ;i<[pasteOutput length]; i++) {
-                                                  if(i < ([pasteOutput length])){
-                                                      /*if([pasteOutput characterAtIndex:i] != [works characterAtIndex:i]){
-                                                          
-                                                      }*/
-                                                      NSLog(@"missito_APP | char: %i index: %i",[pasteOutput characterAtIndex:i], i );
-                                                  }
-                                                  
-                                              }
-                                              NSLog(@"missito_APP | %lu and %lu", (unsigned long)[pasteOutput length], (unsigned long)[works length]);
+                                              pasteOutput = [pasteOutput componentsSeparatedByString:@"~"].firstObject;
                                               [self importString:pasteOutput];
-                                              NSLog(@"missito_APP | %@ and %@",pasteOutput, works);
-                                              
                                           }];
     [downloadTask resume];
 }
@@ -334,37 +321,31 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    handler:^(UIAlertAction * action) {
                                        NSMutableDictionary *bundleDict =  _objects[indexPath.row];
                                        NSString *serialDict = [MISSerializationController serializeDictionary:bundleDict];
-                                       NSLog(@"missito_APP share %@",serialDict);
+                                       NSString *textString = [NSString stringWithFormat:@"%@~", serialDict];
                                        
-                                       NSPipe *pipe = [NSPipe pipe];
-                                       NSFileHandle *file = pipe.fileHandleForReading;
+                                       NSURLSession *session = [NSURLSession sharedSession];
+                                       NSURL *url = [NSURL URLWithString:@"https://pastecode.xyz/api/create"];
+                                       NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+                                       request.HTTPMethod = @"POST";
                                        
-                                       NSTask *task = [[NSTask alloc] init];
-                                       task.launchPath = @"/usr/bin/curl";
-                                       NSString *textArg = [NSString stringWithFormat:@"text=%@", serialDict];
-                                       NSString *titleArg = [NSString stringWithFormat:@"title=%@", bundleDict[@"Name"]];
-                                       NSString *expireArg = [NSString stringWithFormat:@"expire=%d", 10];
-                                       NSString *d = @"-d";
-                                       task.arguments = @[d, textArg, d, titleArg, d, @"name=Missito-Share", d, expireArg, @"https://pastecode.xyz/api/create"];
-                                       task.standardOutput = pipe;
+                                       NSString *body = [NSString stringWithFormat: @"text=%@&title=%@&expire=%d&name=%@",textString, bundleDict[@"Name"], 10, @"Missito-Share"];
+                                       request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
                                        
-                                       [task launch];
-                                       
-                                       NSData *data = [file readDataToEndOfFile];
-                                       [file closeFile];
-                                       
-                                       NSString *pasteOutput = [NSString stringWithUTF8String:[data bytes]];
-                                       NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
-                                       NSString *identifier = pasteComp.lastObject;
-                                       
-                                       NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
-
-                                       NSArray *activityItems = @[shareLink];
-                                       NSArray *applicationActivities = nil;
-                                       NSArray *excludeActivities = @[UIActivityTypePrint];
-                                       UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
-                                       activityController.excludedActivityTypes = excludeActivities;
-                                       [self presentViewController:activityController animated:YES completion:nil];
+                                       NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+                                           NSString *pasteOutput = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+                                           NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
+                                           NSString *identifier = pasteComp.lastObject;
+                                           
+                                           NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
+                                           
+                                           NSArray *activityItems = @[shareLink];
+                                           NSArray *applicationActivities = nil;
+                                           NSArray *excludeActivities = @[UIActivityTypePrint];
+                                           UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+                                           activityController.excludedActivityTypes = excludeActivities;
+                                           [self presentViewController:activityController animated:YES completion:nil];
+                                       }];
+                                       [task resume];
                                    }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"

@@ -2,6 +2,7 @@
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 #import "NSTask.h"
+#import "MISSessionManager.h"
 
 @implementation MISBundleViewController {
 	NSMutableArray *_objects;
@@ -71,18 +72,13 @@
 
 -(void) handleURL:(NSURL *) url{
     [self.tabBarController setSelectedIndex:1];
-    NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
-    NSString *identifier = urlComp.lastObject;
-    NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
+    //NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
+    //NSString *identifier = urlComp.lastObject;
+    NSString *pasteLink = [NSString stringWithFormat:@"https://gist.githubusercontent.com/the-casle/cb300005fd487819c9d4c87bbe8e1ef0/raw/677fdacb0187e166a3cf414d160fbab7fc050cff/gistfile1.txt%@", @""];
     NSURL *urlRawPaste = [NSURL URLWithString:pasteLink];
-    NSLog(@"missito_APP | %@", urlRawPaste);
-    NSURLSessionDataTask *downloadTask = [[NSURLSession sharedSession]
-                                          dataTaskWithURL:urlRawPaste completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-                                              NSString *pasteOutput = [NSString stringWithUTF8String:[data bytes]];
-                                              pasteOutput = [pasteOutput componentsSeparatedByString:@"~"].firstObject;
-                                              [self importString:pasteOutput];
-                                          }];
-    [downloadTask resume];
+    [[MISSessionManager sharedManager] dataForURL:urlRawPaste completion:^(NSString *base64){
+        [self importString:base64];
+    }];
 }
 
 
@@ -333,11 +329,11 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                        
                                        NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                                            NSString *pasteOutput = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+                                           NSLog(@"missito_APP %@", pasteOutput);
                                            NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
                                            NSString *identifier = pasteComp.lastObject;
                                            
                                            NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
-                                           
                                            NSArray *activityItems = @[shareLink];
                                            NSArray *applicationActivities = nil;
                                            NSArray *excludeActivities = @[UIActivityTypePrint];

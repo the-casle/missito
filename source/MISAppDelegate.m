@@ -3,6 +3,9 @@
 #import "MISBundleViewController.h"
 #import "MISSettingsViewController.h"
 
+#import "MISSessionManager.h"
+
+
 @implementation MISAppDelegate
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -48,4 +51,9 @@
     return YES;
 }
 
+
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
+    MISSessionManager *sessManager = [MISSessionManager sharedManager];
+    sessManager.backgroundSessionCompletionHandler = completionHandler;
+}
 @end

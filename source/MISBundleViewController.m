@@ -2,7 +2,6 @@
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 #import "NSTask.h"
-#import "MISSessionManager.h"
 
 @implementation MISBundleViewController {
 	NSMutableArray *_objects;
@@ -72,18 +71,17 @@
 
 -(void) handleURL:(NSURL *) url{
     [self.tabBarController setSelectedIndex:1];
-    //NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
-    //NSString *identifier = urlComp.lastObject;
-    NSString *pasteLink = [NSString stringWithFormat:@"https://gist.githubusercontent.com/the-casle/cb300005fd487819c9d4c87bbe8e1ef0/raw/677fdacb0187e166a3cf414d160fbab7fc050cff/gistfile1.txt%@", @""];
+    NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
+    NSString *identifier = urlComp.lastObject;
+    NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
     NSURL *urlRawPaste = [NSURL URLWithString:pasteLink];
-    [[MISSessionManager sharedManager] dataForURL:urlRawPaste completion:^(NSString *base64){
-        [self importString:base64];
-    }];
+    NSData *data = [[NSData dataWithContentsOfURL:urlRawPaste] mutableCopy];
+    NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+    [self importDictionary:dict];
 }
 
 
--(void) importString:(NSString *) base64String{
-    NSMutableDictionary *deserialDict = [MISSerializationController deserializeDictionaryFromString:base64String];
+-(void) importDictionary:(NSMutableDictionary *) deserialDict{
     UIAlertController *alert = nil;
     UIAlertAction *continueButton = nil;
     UIAlertAction *cancelButton = nil;
@@ -146,7 +144,7 @@
             NSURL *url = [NSURL URLWithString:pasteString];
             [self handleURL:url];
         } else {
-            [self importString:pasteString];
+            //[self importString:pasteString];
         }
     } else {
         UIAlertController *alert = [UIAlertController
@@ -316,15 +314,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * action) {
                                        NSMutableDictionary *bundleDict =  _objects[indexPath.row];
+                                       
                                        NSString *serialDict = [MISSerializationController serializeDictionary:bundleDict];
-                                       NSString *textString = [NSString stringWithFormat:@"%@~", serialDict];
                                        
                                        NSURLSession *session = [NSURLSession sharedSession];
                                        NSURL *url = [NSURL URLWithString:@"https://pastecode.xyz/api/create"];
                                        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
                                        request.HTTPMethod = @"POST";
                                        
-                                       NSString *body = [NSString stringWithFormat: @"text=%@&title=%@&expire=%d&name=%@",textString, bundleDict[@"Name"], 10, @"Missito-Share"];
+                                       NSString *body = [NSString stringWithFormat: @"text=%@&title=%@&expire=%d&name=%@",serialDict, bundleDict[@"Name"], 10, @"Missito-Share"];
                                        request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
                                        
                                        NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {

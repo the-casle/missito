@@ -6,6 +6,6 @@
 @interface MISSerializationController : NSObject
 
 +(NSString *)serializeDictionary:(NSMutableDictionary *)dict;
-+(NSMutableDictionary *)deserializeDictionaryFromString:(NSString *)string;
++(NSMutableDictionary *)deserializeDictionaryFromData:(NSData *)data;
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict;
 @end

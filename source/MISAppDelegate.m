@@ -3,9 +3,6 @@
 #import "MISBundleViewController.h"
 #import "MISSettingsViewController.h"
 
-#import "MISSessionManager.h"
-
-
 @implementation MISAppDelegate
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application {
@@ -49,11 +46,5 @@
     MISBundleViewController *root = (MISBundleViewController *)[_bundleViewController.viewControllers objectAtIndex:0];
     [root handleURL: url];
     return YES;
-}
-
-
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)(void))completionHandler {
-    MISSessionManager *sessManager = [MISSessionManager sharedManager];
-    sessManager.backgroundSessionCompletionHandler = completionHandler;
 }
 @end

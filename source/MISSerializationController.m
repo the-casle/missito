@@ -3,22 +3,23 @@
 @implementation MISSerializationController
 
 +(NSString *)serializeDictionary:(NSMutableDictionary *)dict {
-    NSMutableArray *mutable = [dict mutableCopy];
-    
-    NSData *plist = [NSPropertyListSerialization dataWithPropertyList:mutable
-                                                               format:NSPropertyListBinaryFormat_v1_0
-                                                              options:kNilOptions
-                                                                error:NULL];
-    return [plist base64EncodedStringWithOptions:kNilOptions];
+    NSMutableDictionary *mutable = [dict mutableCopy];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:mutable
+                                                       options:0
+                                                         error:nil];
+    if (! jsonData) {
+        return @"{}";
+    } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
 }
 
-+(NSMutableDictionary *)deserializeDictionaryFromString:(NSString *)string {
-    NSData *plist = [[NSData alloc] initWithBase64EncodedString:string options:kNilOptions];
-    if(!plist) return nil;
-    return [NSPropertyListSerialization propertyListWithData:plist
-                                                     options:kNilOptions
-                                                      format:NULL
-                                                       error:NULL];
++(NSMutableDictionary *)deserializeDictionaryFromData:(NSData *)data {
+    NSError *error;
+    NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:&error];
+    NSLog(@"missito_APP | Dict: %@ Error: %@", dict, error);
+
+    return dict;
 }
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {
     if(bundle && dict){

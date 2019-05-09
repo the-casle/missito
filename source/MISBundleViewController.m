@@ -71,13 +71,14 @@
 
 -(void) handleURL:(NSURL *) url{
     [self.tabBarController setSelectedIndex:1];
-    NSArray *urlComp = [url.absoluteString componentsSeparatedByString:@"/"];
-    NSString *identifier = urlComp.lastObject;
-    NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
-    NSURL *urlRawPaste = [NSURL URLWithString:pasteLink];
-    NSData *data = [[NSData dataWithContentsOfURL:urlRawPaste] mutableCopy];
-    NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
-    [self importDictionary:dict];
+    NSURL *urlRawPaste = [self sourceURLFromSharingString:url.absoluteString];
+    NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
+    if(data){
+        NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+        [self importDictionary:dict];
+    } else {
+         [self importDictionary:nil];
+    }
 }
 
 
@@ -104,7 +105,7 @@
                           }];
         cancelButton = [UIAlertAction
                         actionWithTitle:@"Cancel"
-                        style:UIAlertActionStyleDefault
+                        style:UIAlertActionStyleCancel
                         handler:^(UIAlertAction * action) {
                             //Handle no, thanks button
                         }];
@@ -119,7 +120,7 @@
                  UIAlertControllerStyleAlert];
         cancelButton = [UIAlertAction
                         actionWithTitle:@"Dismiss"
-                        style:UIAlertActionStyleDefault
+                        style:UIAlertActionStyleCancel
                         handler:^(UIAlertAction * action) {
                             //Handle no, thanks button
                         }];
@@ -135,16 +136,26 @@
     NSString *pasteString = generalPasteboard.string;
     
     if(pasteString){
-        NSError *error = nil;
-        NSDataDetector *detector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:&error];
-        NSArray *matches = [detector matchesInString:pasteString
-                                             options:0
-                                               range:NSMakeRange(0, [pasteString length])];
-        if(matches.count > 0){
-            NSURL *url = [NSURL URLWithString:pasteString];
-            [self handleURL:url];
+        NSURL *urlRawPaste = [self sourceURLFromSharingString:pasteString];
+        NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
+        if(data){
+            NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+            [self importDictionary:dict];
         } else {
-            //[self importString:pasteString];
+            UIAlertController *alert = [UIAlertController
+                                        alertControllerWithTitle:@"Error"
+                                        message:@"Incorrect link in pasteboard."
+                                        preferredStyle:
+                                        UIAlertControllerStyleAlert];
+            UIAlertAction *cancelButton = [UIAlertAction
+                                           actionWithTitle:@"Dismiss"
+                                           style:UIAlertActionStyleCancel
+                                           handler:^(UIAlertAction * action) {
+                                               //Handle no, thanks button
+                                           }];
+            
+            [alert addAction:cancelButton];
+            [self presentViewController:alert animated:YES completion:nil];
         }
     } else {
         UIAlertController *alert = [UIAlertController
@@ -154,7 +165,7 @@
                  UIAlertControllerStyleAlert];
         UIAlertAction *cancelButton = [UIAlertAction
                         actionWithTitle:@"Dismiss"
-                        style:UIAlertActionStyleDefault
+                        style:UIAlertActionStyleCancel
                         handler:^(UIAlertAction * action) {
                             //Handle no, thanks button
                         }];
@@ -162,6 +173,13 @@
         [alert addAction:cancelButton];
          [self presentViewController:alert animated:YES completion:nil];
     }
+}
+
+-(NSURL *) sourceURLFromSharingString:(NSString *) string{
+    NSArray *urlComp = [string componentsSeparatedByString:@"/"];
+    NSString *identifier = urlComp.lastObject;
+    NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
+    return [NSURL URLWithString:pasteLink];
 }
 
 -(void) saveObjects{
@@ -246,7 +264,7 @@
                                 preferredStyle: UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Dismiss"
-                                   style:UIAlertActionStyleDefault
+                                   style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        //Handle no, thanks button
                                    }];
@@ -292,7 +310,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                          }];
                                          UIAlertAction* popCancelButton = [UIAlertAction
                                                                            actionWithTitle:@"Cancel"
-                                                                           style:UIAlertActionStyleDefault
+                                                                           style:UIAlertActionStyleCancel
                                                                            handler:^(UIAlertAction * action) {
                                                                            }];
                                          UIAlertAction* popOkButton = [UIAlertAction
@@ -343,7 +361,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
-                                   style:UIAlertActionStyleDefault
+                                   style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        //Handle no, thanks button
                                    }];

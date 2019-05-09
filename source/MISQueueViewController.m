@@ -38,7 +38,7 @@
         
         UIAlertAction* cancelButton = [UIAlertAction
                                        actionWithTitle:@"Dismiss"
-                                       style:UIAlertActionStyleDefault
+                                       style:UIAlertActionStyleCancel
                                        handler:^(UIAlertAction * action) {
                                            //Handle no, thanks button
                                        }];

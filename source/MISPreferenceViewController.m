@@ -201,7 +201,7 @@
     }];
     UIAlertAction* popCancelButton = [UIAlertAction
                                       actionWithTitle:@"Cancel"
-                                      style:UIAlertActionStyleDefault
+                                      style:UIAlertActionStyleCancel
                                       handler:^(UIAlertAction * action) {
                                       }];
     UIAlertAction* popOkButton = [UIAlertAction
@@ -244,7 +244,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
         }];
         UIAlertAction* popCancelButton = [UIAlertAction
                                           actionWithTitle:@"Cancel"
-                                          style:UIAlertActionStyleDefault
+                                          style:UIAlertActionStyleCancel
                                           handler:^(UIAlertAction * action) {
                                           }];
         UIAlertAction* popOkButton = [UIAlertAction
@@ -291,7 +291,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                             }];
                                             UIAlertAction* popCancelButton = [UIAlertAction
                                                                               actionWithTitle:@"Cancel"
-                                                                              style:UIAlertActionStyleDefault
+                                                                              style:UIAlertActionStyleCancel
                                                                               handler:^(UIAlertAction * action) {
                                                                               }];
                                             UIAlertAction* popContinueButton = [UIAlertAction
@@ -359,7 +359,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                      }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
-                                   style:UIAlertActionStyleDefault
+                                   style:UIAlertActionStyleCancel
                                    handler:^(UIAlertAction * action) {
                                        //Handle no, thanks button
                                    }];

@@ -236,16 +236,12 @@
 }
 
 -(BOOL) doesNameExist:(NSString *)name{
-    BOOL doesExist = NO;
     for(NSDictionary *dict in _objects){
         if([dict[@"Name"] isEqualToString:name]){
-            doesExist = YES;
-            return doesExist;
-        } else {
-            doesExist = NO;
+            return YES;
         }
     }
-    return doesExist;
+    return NO;
 }
 
 #pragma mark - Table View Delegate

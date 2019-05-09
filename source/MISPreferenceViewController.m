@@ -166,16 +166,12 @@
 }
 
 -(BOOL) doesNameExist:(NSString *)name{
-    BOOL doesExist = NO;
     for(NSDictionary *dict in _objects.lastObject){
         if([dict[@"Name"] isEqualToString:name]){
-            doesExist = YES;
-            return doesExist;
-        } else {
-            doesExist = NO;
+            return YES;
         }
     }
-    return doesExist;
+    return NO;
 }
     
 -(void) updateCurrentCell{

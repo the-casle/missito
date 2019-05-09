@@ -136,6 +136,7 @@
     NSString *pasteString = generalPasteboard.string;
     
     if(pasteString){
+        NSLog(@"missito_APP | %@", pasteString);
         NSURL *urlRawPaste = [self sourceURLFromSharingString:pasteString];
         NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
         if(data){

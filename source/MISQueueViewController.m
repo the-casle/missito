@@ -17,7 +17,7 @@
     [self updateBadgeCount];
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
-    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Compile" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
+    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
 }
 
 - (void)compile:(id)sender {
@@ -31,7 +31,7 @@
         [self saveObjects];
     } else {
         UIAlertController *alert = [UIAlertController
-                                    alertControllerWithTitle:@"Nothing to Compile"
+                                    alertControllerWithTitle:@"Nothing to Build"
                                     message:@"Try adding to the queue first."
                                     preferredStyle:
                                     UIAlertControllerStyleAlert];

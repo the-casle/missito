@@ -180,11 +180,19 @@
     
 -(void) updateCurrentCell{
     NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    if (![currentDict[@"Plist"] isEqualToDictionary:[self activePlist]]) {
+    if (![self isDictionary:currentDict[@"Plist"] equalToDict:[self activePlist]]) {
         NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
         currentDict[@"Name"] = [self unsavedPrefernceString];
         [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation: UITableViewRowAnimationAutomatic];
     }
+}
+-(BOOL) isDictionary:(NSDictionary *) dict equalToDict:(NSDictionary *)otherDict{ // for some reason the docs one doesn't work idek
+    for(NSString *key in dict.allKeys){
+        if(![[dict objectForKey:key] isEqual: [otherDict objectForKey:key]]){
+            return NO;
+        }
+    }
+    return YES;
 }
 
 #pragma mark - Table View Delegate

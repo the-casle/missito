@@ -12,9 +12,12 @@
     [self.navigationItem setTitle: @"Settings"];
     
     NSMutableArray *firstSection = [[NSMutableArray alloc] init];
-    [_objects insertObject:firstSection atIndex:0];
+    NSMutableArray *secondSection = [[NSMutableArray alloc] init];
+    [_objects addObject:firstSection];
+    [_objects addObject:secondSection];
     
-    [firstSection addObject: @{@"Title":@"pwn20wnd", @"Link":@"https://twitter.com/pwn20wnd", @"Image":@"https://twitter.com/pwn20wnd/profile_image?size=original"}];
+    [firstSection addObject: @{@"Title":@"the casle", @"Subtitle":@"he made it or something", @"Link":@"https://twitter.com/the_casle", @"Image":@"https://twitter.com/the_casle/profile_image?size=original"}];
+    [secondSection addObject: @{@"Title":@"midnightchips", @"Subtitle":@"good friend and helped some", @"Link":@"https://twitter.com/midnightchip", @"Image":@"https://twitter.com/midnightchip/profile_image?size=original"}];
     
     [self.tableView reloadData];
 }
@@ -56,11 +59,11 @@
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     switch (section) {
         case 0:
-            return @"Current";
+            return @"Developer";
             break;
             
         case 1:
-            return @"Saved";
+            return @"Special Thanks";
             break;
             
         default:

@@ -90,7 +90,7 @@
     if(deserialDict){
         alert = [UIAlertController
                  alertControllerWithTitle:@"Import"
-                 message:@"Importing from string."
+                 message:@"Importing from link."
                  preferredStyle:
                  UIAlertControllerStyleAlert];
         
@@ -186,6 +186,33 @@
         [_objects writeToURL:[NSURL fileURLWithPath:_savedBundlePath]
                        error:nil];
     }
+}
+
+-(void) shareDictionary:(NSMutableDictionary *)dict forExpire:(double) expire{
+    NSString *serialDict = [MISSerializationController serializeDictionary:dict];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURL *url = [NSURL URLWithString:@"https://pastecode.xyz/api/create"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = @"POST";
+    
+    NSString *body = [NSString stringWithFormat: @"text=%@&title=%@&expire=%f&name=%@",serialDict, dict[@"Name"], expire, @"Missito-Share"];
+    request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        NSString *pasteOutput = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+        NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
+        NSString *identifier = pasteComp.lastObject;
+        identifier = [identifier stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+        NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
+        NSArray *activityItems = @[shareLink];
+        NSArray *applicationActivities = nil;
+        NSArray *excludeActivities = @[UIActivityTypePrint];
+        UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
+        activityController.excludedActivityTypes = excludeActivities;
+        [self presentViewController:activityController animated:YES completion:nil];
+    }];
+    [task resume];
 }
 
 #pragma mark - Table View Data Source
@@ -327,31 +354,54 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    style:UIAlertActionStyleDefault
                                    handler:^(UIAlertAction * action) {
                                        NSMutableDictionary *bundleDict =  _objects[indexPath.row];
+                                       UIAlertController *alert = [UIAlertController
+                                                                   alertControllerWithTitle:@"Expiration"
+                                                                   message:nil
+                                                                   preferredStyle:
+                                                                   UIAlertControllerStyleActionSheet];
                                        
-                                       NSString *serialDict = [MISSerializationController serializeDictionary:bundleDict];
+                                       UIAlertAction *thirtyMins = [UIAlertAction
+                                                                      actionWithTitle:@"30 Minutes"
+                                                                      style:UIAlertActionStyleDefault
+                                                                      handler:^(UIAlertAction * action) {
+                                                                          
+                                                                          [self shareDictionary:bundleDict forExpire:30];
+                                                                      }];
+                                       UIAlertAction *oneDay = [UIAlertAction
+                                                                        actionWithTitle:@"One Day"
+                                                                        style:UIAlertActionStyleDefault
+                                                                        handler:^(UIAlertAction * action) {
+                                                                            [self shareDictionary:bundleDict forExpire:1440];
+                                                                        }];
                                        
-                                       NSURLSession *session = [NSURLSession sharedSession];
-                                       NSURL *url = [NSURL URLWithString:@"https://pastecode.xyz/api/create"];
-                                       NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-                                       request.HTTPMethod = @"POST";
+                                       UIAlertAction *oneMonth = [UIAlertAction
+                                                                     actionWithTitle:@"One Month"
+                                                                     style:UIAlertActionStyleDefault
+                                                                     handler:^(UIAlertAction * action) {
+                                                                         [self shareDictionary:bundleDict forExpire:43800];
+                                                                     }];
+                                       UIAlertAction *forever = [UIAlertAction
+                                                                  actionWithTitle:@"Forever"
+                                                                  style:UIAlertActionStyleDefault
+                                                                  handler:^(UIAlertAction * action) {
+                                                                      [self shareDictionary:bundleDict forExpire:1051200]; // Ha not actaully forever
+                                                                  }];
+                                       UIAlertAction* cancelButton = [UIAlertAction
+                                                                      actionWithTitle:@"Cancel"
+                                                                      style:UIAlertActionStyleCancel
+                                                                      handler:^(UIAlertAction * action) {
+                                                                          //Handle no, thanks button
+                                                                      }];
                                        
-                                       NSString *body = [NSString stringWithFormat: @"text=%@&title=%@&expire=%d&name=%@",serialDict, bundleDict[@"Name"], 10, @"Missito-Share"];
-                                       request.HTTPBody = [body dataUsingEncoding:NSUTF8StringEncoding];
+                                       [alert addAction:thirtyMins];
+                                       [alert addAction:oneDay];
+                                       [alert addAction:oneMonth];
+                                       [alert addAction:forever];
+                                       [alert addAction:cancelButton];
                                        
-                                       NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-                                           NSString *pasteOutput = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-                                           NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
-                                           NSString *identifier = pasteComp.lastObject;
-                                           identifier = [identifier stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-                                           NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
-                                           NSArray *activityItems = @[shareLink];
-                                           NSArray *applicationActivities = nil;
-                                           NSArray *excludeActivities = @[UIActivityTypePrint];
-                                           UIActivityViewController *activityController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:applicationActivities];
-                                           activityController.excludedActivityTypes = excludeActivities;
-                                           [self presentViewController:activityController animated:YES completion:nil];
-                                       }];
-                                       [task resume];
+                                       [self presentViewController:alert animated:YES completion:nil];
+
+                                       
                                    }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"

@@ -134,9 +134,7 @@
     
     UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
     NSString *pasteString = generalPasteboard.string;
-    
     if(pasteString){
-        NSLog(@"missito_APP | %@", pasteString);
         NSURL *urlRawPaste = [self sourceURLFromSharingString:pasteString];
         NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
         if(data){
@@ -342,10 +340,9 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                        
                                        NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
                                            NSString *pasteOutput = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
-                                           NSLog(@"missito_APP %@", pasteOutput);
                                            NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
                                            NSString *identifier = pasteComp.lastObject;
-                                           
+                                           identifier = [identifier stringByReplacingOccurrencesOfString:@"\n" withString:@""];
                                            NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
                                            NSArray *activityItems = @[shareLink];
                                            NSArray *applicationActivities = nil;

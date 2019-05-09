@@ -183,12 +183,15 @@
     }
 }
 -(BOOL) isDictionary:(NSDictionary *) dict equalToDict:(NSDictionary *)otherDict{ // for some reason the docs one doesn't work idek
-    for(NSString *key in dict.allKeys){
-        if(![[dict objectForKey:key] isEqual: [otherDict objectForKey:key]]){
-            return NO;
+    if([dict isKindOfClass:[NSMutableDictionary class]] && [otherDict isKindOfClass:[NSMutableDictionary class]]){
+        for(NSString *key in dict.allKeys){
+            if(![[dict objectForKey:key] isEqual: [otherDict objectForKey:key]]){
+                return NO;
+            }
         }
-    }
-    return YES;
+        return YES;
+    } else return NO;
+    
 }
 
 #pragma mark - Table View Delegate

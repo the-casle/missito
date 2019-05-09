@@ -17,8 +17,6 @@
 +(NSMutableDictionary *)deserializeDictionaryFromData:(NSData *)data {
     NSError *error;
     NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:&error];
-    NSLog(@"missito_APP | Dict: %@ Error: %@", dict, error);
-
     return dict;
 }
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {

@@ -14,7 +14,7 @@
     NSMutableArray *firstSection = [[NSMutableArray alloc] init];
     [_objects insertObject:firstSection atIndex:0];
     
-    [firstSection addObject: @{@"Title":@"Yeet", @"Link":@"apollo://reddit.com/r/jailbreak"}];
+    [firstSection addObject: @{@"Title":@"pwn20wnd", @"Link":@"https://twitter.com/pwn20wnd", @"Image":@"https://twitter.com/pwn20wnd/profile_image?size=original"}];
     
     [self.tableView reloadData];
 }
@@ -36,22 +36,20 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
 	}
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    cell.imageView.layer.cornerRadius = 10.0;
-    cell.imageView.clipsToBounds = YES;
+    NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
     dispatch_async(dispatch_get_global_queue(0,0), ^{
-        NSData * data = [[NSData alloc] initWithContentsOfURL: [NSURL URLWithString: @"https://twitter.com/pwn20wnd/profile_image?size=original"]];
+        NSData *data = [[NSData alloc] initWithContentsOfURL: [NSURL URLWithString: dataDict[@"Image"]]];
         if(data == nil) return;
         dispatch_async(dispatch_get_main_queue(), ^{
-            cell.imageView.image = [self scaleImageWithData:data proportionallyToSize:CGSizeMake(40,40)];
+            cell.imageView.image = [self imageWithImage:[UIImage imageWithData: data] convertToSize:CGSizeMake(40,40)];
             [cell setNeedsLayout];
         });
     });
-
-    NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    cell.imageView.layer.cornerRadius = 10.0;
+    cell.imageView.clipsToBounds = YES;
     cell.textLabel.text = dataDict[@"Title"];
     cell.detailTextLabel.text = dataDict[@"Subtitle"];
-    cell.imageView.image = dataDict[@"Image"];
 	return cell;
 }
 
@@ -77,41 +75,12 @@
     return section[indexPath.row];
 }
 
-- (UIImage *)scaleImageWithData:(NSData *)imageData proportionallyToSize:(CGSize)newSize {
-    return [self scaleImage:[UIImage imageWithData:imageData] toSize:[self estimateNewSize:newSize forImage:[UIImage imageWithData:imageData]]];
-}
-- (CGSize)estimateNewSize:(CGSize)newSize forImage:(UIImage *)image
-{
-    if (image.size.width > image.size.height) {
-        newSize = CGSizeMake((image.size.width/image.size.height) * newSize.height, newSize.height);
-    } else {
-        newSize = CGSizeMake(newSize.width, (image.size.height/image.size.width) * newSize.width);
-    }
-    
-    return newSize;
-}
-- (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size
-{
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
-    CGContextClearRect(context, CGRectMake(0, 0, size.width, size.height));
-    
-    if (originalImage.imageOrientation == UIImageOrientationRight) {
-        CGContextRotateCTM(context, -M_PI_2);
-        CGContextTranslateCTM(context, -size.height, 0.0f);
-        CGContextDrawImage(context, CGRectMake(0, 0, size.height, size.width), originalImage.CGImage);
-    } else {
-        CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), originalImage.CGImage);
-    }
-    
-    CGImageRef scaledImage = CGBitmapContextCreateImage(context);
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
-    
-    UIImage *image = [UIImage imageWithCGImage:scaledImage];
-    CGImageRelease(scaledImage);
-    
-    return image;
+- (UIImage *)imageWithImage:(UIImage *)image convertToSize:(CGSize)size {
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    UIImage *destImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return destImage;
 }
 
 #pragma mark - Table View Delegate
@@ -130,7 +99,27 @@
             [app openURL:components.URL options:@{} completionHandler:nil];
         }
     } else {
-        // twitter stuff
+        [self _openTwitterForUser:linkString];
     }
+}
+- (void)_openTwitterForUser:(NSString*)link {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:[NSURL URLWithString:link] resolvingAgainstBaseURL:YES];
+    NSString *username = [components.query componentsSeparatedByString:@"="].lastObject;
+    if(!username){
+        username = [components.path componentsSeparatedByString:@"/"].lastObject;
+    }
+    
+    UIApplication *app = [UIApplication sharedApplication];
+    NSURL *twitterapp = [NSURL URLWithString:[NSString stringWithFormat:@"twitter:///user?screen_name=%@", username]];
+    NSURL *tweetbot = [NSURL URLWithString:[NSString stringWithFormat:@"tweetbot:///user_profile/%@", username]];
+    NSURL *twitterweb = [NSURL URLWithString:[NSString stringWithFormat:@"http://twitter.com/%@", username]];
+    
+    
+    if ([app canOpenURL:twitterapp])
+        [app openURL:twitterapp options:@{} completionHandler:nil];
+    else if ([app canOpenURL:tweetbot])
+        [app openURL:tweetbot options:@{} completionHandler:nil];
+    else
+        [app openURL:twitterweb options:@{} completionHandler:nil];
 }
 @end

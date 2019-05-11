@@ -93,15 +93,35 @@
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    NSMutableDictionary *selectedDict = [self dataForIndex:indexPath];
-    if([currentDict[@"Name"] isEqualToString:selectedDict[@"Name"]]){
-        currentDict[@"Name"] = [self unsavedPrefernceString];
-        [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
-    }
-	[_objects[indexPath.section] removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
-    [self saveObjects];
+    NSMutableDictionary *dictAtIndex = [self dataForIndex:indexPath];
+    NSString *title = [NSString stringWithFormat:@"Are you sure you want to delete \"%@\"?",dictAtIndex[@"Name"]];
+    UIAlertController *popAlert = [UIAlertController
+                                   alertControllerWithTitle:title
+                                   message:@"This item will be deleted immediately. You can't undo this action."
+                                   preferredStyle:
+                                   UIAlertControllerStyleAlert];
+    UIAlertAction* popCancelButton = [UIAlertAction
+                                      actionWithTitle:@"Cancel"
+                                      style:UIAlertActionStyleCancel
+                                      handler:^(UIAlertAction * action) {
+                                      }];
+    UIAlertAction* popOkButton = [UIAlertAction
+                                  actionWithTitle:@"Delete"
+                                  style:UIAlertActionStyleDestructive
+                                  handler:^(UIAlertAction * action) {
+                                      NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                      NSMutableDictionary *selectedDict = [self dataForIndex:indexPath];
+                                      if([currentDict[@"Name"] isEqualToString:selectedDict[@"Name"]]){
+                                          currentDict[@"Name"] = [self unsavedPrefernceString];
+                                          [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                      }
+                                      [_objects[indexPath.section] removeObjectAtIndex:indexPath.row];
+                                      [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                      [self saveObjects];
+                                  }];
+    [popAlert addAction:popCancelButton];
+    [popAlert addAction:popOkButton];
+    [self presentViewController:popAlert animated:YES completion:nil];
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {

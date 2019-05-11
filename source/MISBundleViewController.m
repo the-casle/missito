@@ -240,9 +240,29 @@
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-	[_objects removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
-     [self saveObjects];
+    NSMutableDictionary *dictAtIndex = _objects[indexPath.row];
+    NSString *title = [NSString stringWithFormat:@"Are you sure you want to delete \"%@\"?",dictAtIndex[@"Name"]];
+    UIAlertController *popAlert = [UIAlertController
+                                   alertControllerWithTitle:title
+                                   message:@"This item will be deleted immediately. You can't undo this action."
+                                   preferredStyle:
+                                   UIAlertControllerStyleAlert];
+    UIAlertAction* popCancelButton = [UIAlertAction
+                                      actionWithTitle:@"Cancel"
+                                      style:UIAlertActionStyleCancel
+                                      handler:^(UIAlertAction * action) {
+                                      }];
+    UIAlertAction* popOkButton = [UIAlertAction
+                                  actionWithTitle:@"Delete"
+                                  style:UIAlertActionStyleDestructive
+                                  handler:^(UIAlertAction * action) {
+                                      [_objects removeObjectAtIndex:indexPath.row];
+                                      [tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
+                                      [self saveObjects];
+                                  }];
+    [popAlert addAction:popCancelButton];
+    [popAlert addAction:popOkButton];
+    [self presentViewController:popAlert animated:YES completion:nil];
 }
 
 #pragma mark - Utility

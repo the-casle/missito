@@ -13,8 +13,6 @@
 
 	_objects = [[NSMutableArray alloc] init];
 
-    [self.navigationItem setTitle: @"Preferences"];
-    
     NSMutableArray *nameArray = [[NSMutableArray alloc] init];
     for(NSString *preference in [self allBundles]){
         [nameArray addObject:[self nameFromBundleID:preference]];
@@ -25,11 +23,13 @@
             NSString *nameFromBundle = [self nameFromBundleID:bundle];
             if([nameFromBundle isEqualToString:name]){
                 [_objects addObject:@{@"Name":nameFromBundle, @"BundleID":bundle}];
-                [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0] ] withRowAnimation:UITableViewRowAnimationAutomatic];
                 break;
             }
         }
     }
+    [self.tableView reloadData];
+    
+    [self.navigationItem setTitle: @"Preferences"];
     self.navigationItem.rightBarButtonItem = [[MISBadgeBarButtonItem alloc] initWithTitle:@"Queue" style:UIBarButtonItemStylePlain target:self action:@selector(queueButton:)];
 }
 

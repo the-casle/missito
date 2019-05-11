@@ -20,6 +20,10 @@
     self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
 }
 
+-(void)queueBack:(id)sender {
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
 - (void)compile:(id)sender {
     if(_objects.count > 0){
         MISSharingController *sharingCont = [MISSharingController sharedInstance];

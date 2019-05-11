@@ -382,6 +382,11 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                          [sharingCont.queueArray addObject:shareDict];
                                          
                                          MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
+                                         UIBarButtonItem *queueMore = [[UIBarButtonItem alloc] initWithTitle:@"Continue Queueing"
+                                                                                                       style:UIBarButtonItemStylePlain
+                                                                                                      target:nil
+                                                                                                      action:nil];
+                                         self.navigationItem.backBarButtonItem = queueMore;
                                          [self.navigationController pushViewController:queueController animated:YES];
                                      }];
     UIAlertAction* cancelButton = [UIAlertAction

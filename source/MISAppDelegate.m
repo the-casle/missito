@@ -31,7 +31,7 @@
     if (@available(iOS 11, tvOS 11, *)) {
         _settingsViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
-    _settingsViewController.title = @"Settings";
+    _settingsViewController.title = @"Info";
     _settingsViewController.view.backgroundColor = [UIColor whiteColor];
     [localViewControllersArray addObject:_settingsViewController];
     

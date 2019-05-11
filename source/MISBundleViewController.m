@@ -270,7 +270,6 @@
 }
 
 #pragma mark - Table View Delegate
-
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
     NSString *message = @"Bundles are groups of preferences:\n";
     NSMutableDictionary *row = _objects[indexPath.row];

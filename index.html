@@ -5,6 +5,6 @@
             function qs() {
                 var query = window.location.search.substring(1);
                 var redirect = "missito://share/" + query;
-                window.location = redirect;
+                window.location.replace(redirect);
             }
         </script>

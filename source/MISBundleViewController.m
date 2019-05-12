@@ -204,7 +204,7 @@
         NSArray *pasteComp = [pasteOutput componentsSeparatedByString:@"/"];
         NSString *identifier = pasteComp.lastObject;
         identifier = [identifier stringByReplacingOccurrencesOfString:@"\n" withString:@""];
-        NSString *shareLink = [NSString stringWithFormat:@"missito://pastecode/%@", identifier];
+        NSString *shareLink = [NSString stringWithFormat:@"https://the-casle.github.io/missito?%@", identifier];
         NSArray *activityItems = @[shareLink];
         NSArray *applicationActivities = nil;
         NSArray *excludeActivities = @[UIActivityTypePrint];

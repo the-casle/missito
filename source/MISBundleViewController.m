@@ -72,13 +72,16 @@
 -(void) handleURL:(NSURL *) url{
     [self.tabBarController setSelectedIndex:1];
     NSURL *urlRawPaste = [self sourceURLFromSharingString:url.absoluteString];
-    NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
-    if(data){
-        NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
-        [self importDictionary:dict];
-    } else {
-         [self importDictionary:nil];
-    }
+    NSURLRequest *request = [NSURLRequest requestWithURL:urlRawPaste];
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){
+        if(data){
+            NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+            [self importDictionary:dict];
+        } else {
+            [self importDictionary:nil];
+        }
+    }];
+    [task resume];
 }
 
 
@@ -131,31 +134,33 @@
 }
 
 - (void)import:(id)sender {
-    
     UIPasteboard *generalPasteboard = [UIPasteboard generalPasteboard];
     NSString *pasteString = generalPasteboard.string;
     if(pasteString){
         NSURL *urlRawPaste = [self sourceURLFromSharingString:pasteString];
-        NSData *data = [NSData dataWithContentsOfURL:urlRawPaste];
-        if(data){
-            NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
-            [self importDictionary:dict];
-        } else {
-            UIAlertController *alert = [UIAlertController
-                                        alertControllerWithTitle:@"Error"
-                                        message:@"Incorrect link in pasteboard."
-                                        preferredStyle:
-                                        UIAlertControllerStyleAlert];
-            UIAlertAction *cancelButton = [UIAlertAction
-                                           actionWithTitle:@"Dismiss"
-                                           style:UIAlertActionStyleCancel
-                                           handler:^(UIAlertAction * action) {
-                                               //Handle no, thanks button
-                                           }];
-            
-            [alert addAction:cancelButton];
-            [self presentViewController:alert animated:YES completion:nil];
-        }
+        NSURLRequest *request = [NSURLRequest requestWithURL:urlRawPaste];
+        NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){
+            if(data){
+                NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+                [self importDictionary:dict];
+            } else {
+                UIAlertController *alert = [UIAlertController
+                                            alertControllerWithTitle:@"Error"
+                                            message:@"Incorrect link in pasteboard."
+                                            preferredStyle:
+                                            UIAlertControllerStyleAlert];
+                UIAlertAction *cancelButton = [UIAlertAction
+                                               actionWithTitle:@"Dismiss"
+                                               style:UIAlertActionStyleCancel
+                                               handler:^(UIAlertAction * action) {
+                                                   //Handle no, thanks button
+                                               }];
+                
+                [alert addAction:cancelButton];
+                [self presentViewController:alert animated:YES completion:nil];
+            }
+        }];
+        [task resume];
     } else {
         UIAlertController *alert = [UIAlertController
                  alertControllerWithTitle:@"Error"
@@ -175,7 +180,7 @@
 }
 
 -(NSURL *) sourceURLFromSharingString:(NSString *) string{
-    NSArray *urlComp = [string componentsSeparatedByString:@"/"];
+    NSArray *urlComp = [string componentsSeparatedByString:@"?"];
     NSString *identifier = urlComp.lastObject;
     NSString *pasteLink = [NSString stringWithFormat:@"https://pastecode.xyz/view/raw/%@", identifier];
     return [NSURL URLWithString:pasteLink];

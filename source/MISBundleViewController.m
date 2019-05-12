@@ -291,7 +291,7 @@
 
 #pragma mark - Table View Delegate
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    NSString *message = @"Bundles are groups of preferences:\n";
+    NSString *message = @"";
     NSMutableDictionary *row = _objects[indexPath.row];
     NSMutableArray *holdArray = row[@"Array"];
     for(NSMutableDictionary *holdDict in holdArray){
@@ -300,7 +300,7 @@
     }
 
     UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Details"
+                                alertControllerWithTitle:@"Contains the Following Preferences:"
                                 message:message
                                 preferredStyle: UIAlertControllerStyleAlert];
     UIAlertAction* cancelButton = [UIAlertAction

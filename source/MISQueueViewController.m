@@ -17,11 +17,32 @@
     [self updateBadgeCount];
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
-    self.navigationItem.rightBarButtonItem = self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
+    if(_objects.count > 0){
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
+    } else {
+        UIButton *info = [UIButton buttonWithType:UIButtonTypeInfoLight];
+        [info addTarget:self action:@selector(infoIcon:) forControlEvents:UIControlEventTouchUpInside];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:info];
+    }
 }
 
--(void)queueBack:(id)sender {
-    [self.navigationController popToRootViewControllerAnimated:YES];
+-(void) infoIcon:(id)sender{
+    UIAlertController *alert = [UIAlertController
+                                alertControllerWithTitle:@"Queue"
+                                message:@"The queue is used to convert saved preferences into a shareable format. Multiple can be bundled together to save setups or for sharing."
+                                preferredStyle:
+                                UIAlertControllerStyleAlert];
+    
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:@"Dismiss"
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       //Handle no, thanks button
+                                   }];
+    
+    [alert addAction:cancelButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)compile:(id)sender {
@@ -33,23 +54,6 @@
         [self.navigationController popViewControllerAnimated:NO];
         _objects = [[NSMutableArray alloc] init];
         [self saveObjects];
-    } else {
-        UIAlertController *alert = [UIAlertController
-                                    alertControllerWithTitle:@"Nothing to Build"
-                                    message:@"Try adding to the queue first."
-                                    preferredStyle:
-                                    UIAlertControllerStyleAlert];
-        
-        UIAlertAction* cancelButton = [UIAlertAction
-                                       actionWithTitle:@"Dismiss"
-                                       style:UIAlertActionStyleCancel
-                                       handler:^(UIAlertAction * action) {
-                                           //Handle no, thanks button
-                                       }];
-        
-        [alert addAction:cancelButton];
-        
-        [self presentViewController:alert animated:YES completion:nil];
     }
 }
 

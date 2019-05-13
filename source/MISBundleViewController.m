@@ -31,11 +31,34 @@
     
     [self transferFromQueue];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Import" style:UIBarButtonItemStylePlain target:self action:@selector(import:)];
+    
+    UIButton *info = [UIButton buttonWithType:UIButtonTypeInfoLight];
+    [info addTarget:self action:@selector(infoIcon:) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:info];
 }
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
     [self transferFromQueue];
+}
+
+-(void) infoIcon:(id)sender{
+    UIAlertController *alert = [UIAlertController
+                                alertControllerWithTitle:@"Bundles"
+                                message:@"Bundles are groups of preferences that can be activated together. This is useful for saving and switching between setups. Missito uses this format to share."
+                                preferredStyle:
+                                UIAlertControllerStyleAlert];
+    
+    UIAlertAction* cancelButton = [UIAlertAction
+                                   actionWithTitle:@"Dismiss"
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction * action) {
+                                       //Handle no, thanks button
+                                   }];
+    
+    [alert addAction:cancelButton];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 -(void) transferFromQueue{
@@ -78,7 +101,15 @@
             NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
             [self importDictionary:dict];
         } else {
-            [self importDictionary:nil];
+            NSURLSessionDataTask *task2 = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){
+                if(data){
+                    NSMutableDictionary *dict = [MISSerializationController deserializeDictionaryFromData:data];
+                    [self importDictionary:dict];
+                } else {
+                    [self importDictionary:nil];
+                }
+            }];
+            [task2 resume];
         }
     }];
     [task resume];

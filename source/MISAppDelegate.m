@@ -15,7 +15,7 @@
     if (@available(iOS 11, tvOS 11, *)) {
         _rootViewController.navigationBar.prefersLargeTitles = UI_USER_INTERFACE_IDIOM() != UIUserInterfaceIdiomPad ? YES : NO;
     }
-    //_rootViewController.tabBarItem.image=[UIImage imageNamed:@"save.png"];
+    _rootViewController.tabBarItem.image = [UIImage imageNamed:@"layers.png"];
     
     [localViewControllersArray addObject:_rootViewController];
     
@@ -25,6 +25,8 @@
     }
     _bundleViewController.title = @"Bundles";
     _bundleViewController.view.backgroundColor = [UIColor whiteColor];
+    _bundleViewController.tabBarItem.image = [UIImage imageNamed:@"product.png"];
+    
     [localViewControllersArray addObject:_bundleViewController];
     
     _settingsViewController = [[UINavigationController alloc] initWithRootViewController:[[MISSettingsViewController alloc] init]];
@@ -33,6 +35,8 @@
     }
     _settingsViewController.title = @"Info";
     _settingsViewController.view.backgroundColor = [UIColor whiteColor];
+    _settingsViewController.tabBarItem.image = [UIImage imageNamed:@"settings.png"];
+    
     [localViewControllersArray addObject:_settingsViewController];
     
     tabBars.viewControllers = localViewControllersArray;

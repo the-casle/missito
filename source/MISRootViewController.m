@@ -37,6 +37,8 @@
     [super viewWillAppear:animated];
     MISBadgeBarButtonItem *badgeBar = (MISBadgeBarButtonItem *)self.navigationItem.rightBarButtonItem;
     badgeBar.badgeValue = self.navigationController.tabBarItem.badgeValue;
+    
+    [self.tableView reloadData];
 }
 
 -(void) queueButton:(id)sender{

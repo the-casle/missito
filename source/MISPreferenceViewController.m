@@ -67,6 +67,11 @@
     [self saveObjects];
 }
 
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [self.tableView reloadData];
+}
+
 #pragma mark - Table View Data Source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -237,6 +242,16 @@
     } else return NO;
 }
 
+-(void) queuePush{
+    MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
+    UIBarButtonItem *queueMore = [[UIBarButtonItem alloc] initWithTitle:@"Continue Queueing"
+                                                                  style:UIBarButtonItemStylePlain
+                                                                 target:nil
+                                                                 action:nil];
+    self.navigationItem.backBarButtonItem = queueMore;
+    [self.navigationController pushViewController:queueController animated:YES];
+}
+
 -(UIView *) queueButtonView{
     UIButton *queueButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [queueButton addTarget:self
@@ -259,6 +274,11 @@
 }
 
 -(UIView *) checkedButtonView{
+    UIButton *queueButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [queueButton addTarget:self
+                    action:@selector(queuePush)
+          forControlEvents:UIControlEventTouchUpInside];
+    
     UIImageView *checkImgView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"checked.png"]];
     checkImgView.image = [checkImgView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     checkImgView.tintColor = [UIColor colorWithRed:0 green:.478 blue:1 alpha:1];
@@ -268,7 +288,10 @@
     checkView.layer.masksToBounds = YES;
     checkView.backgroundColor = [UIColor colorWithRed:.941 green:.941 blue:.969 alpha:1];
     checkView.alpha = 0;
+    
+    queueButton.frame = checkView.bounds;
     [checkView addSubview:checkImgView];
+    [checkView addSubview:queueButton];
     return checkView;
 }
 
@@ -286,13 +309,7 @@
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     cell.accessoryView = [self checkedButtonView];
     
-    MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
-    UIBarButtonItem *queueMore = [[UIBarButtonItem alloc] initWithTitle:@"Continue Queueing"
-                                                                  style:UIBarButtonItemStylePlain
-                                                                 target:nil
-                                                                 action:nil];
-    self.navigationItem.backBarButtonItem = queueMore;
-    [self.navigationController pushViewController:queueController animated:YES];
+    [self queuePush];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {

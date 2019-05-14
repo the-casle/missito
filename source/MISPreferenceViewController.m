@@ -308,8 +308,11 @@
     
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     cell.accessoryView = [self checkedButtonView];
-    
-    [self queuePush];
+    if(sharingCont.queueArray.count > 0){
+        self.navigationController.tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)sharingCont.queueArray.count];
+    } else {
+        self.navigationController.tabBarItem.badgeValue = nil;
+    }
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {

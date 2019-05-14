@@ -12,8 +12,8 @@
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
     for(NSMutableDictionary *dict in sharingCont.queueArray){
         [_objects addObject: dict];
-        [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
     }
+    [self.tableView reloadData];
     [self updateBadgeCount];
     self.tableView.allowsSelection = NO;
     [self.navigationItem setTitle: @"Queue"];
@@ -97,9 +97,9 @@
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
 	[_objects removeObjectAtIndex:indexPath.row];
-	[tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
     [self saveObjects];
     [self updateBadgeCount];
+	[self.tableView deleteRowsAtIndexPaths:@[ indexPath ] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 #pragma mark - Table View Delegate

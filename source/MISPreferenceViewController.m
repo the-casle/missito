@@ -50,6 +50,7 @@
                                                object:[UIApplication sharedApplication]];
 	
     [self.tableView insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0 inSection:0], [NSIndexPath indexPathForRow:0 inSection:1] ] withRowAnimation:UITableViewRowAnimationAutomatic];
+    self.tableView.rowHeight =  50;
     
     self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
@@ -84,7 +85,24 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    if(indexPath.section > 0) cell.accessoryType = UITableViewCellAccessoryDetailButton;
+    if(indexPath.section > 0){
+        MISSharingController *sharingCont = [MISSharingController sharedInstance];
+        BOOL isQueued = NO;
+        
+        for(NSMutableDictionary *shareDict in sharingCont.queueArray){ // THIS IS BUGGED STILL.
+            NSMutableDictionary *base = shareDict[@"BaseDict"];
+            NSMutableDictionary *currentDict = [self dataForIndex:indexPath];
+            if([currentDict[@"Name"] isEqualToString:base[@"Name"]]){
+                isQueued = YES;
+                break;
+            }
+        }
+        if(isQueued){
+            cell.accessoryView = [self checkedButtonView];
+        } else {
+            cell.accessoryView = [self queueButtonView];
+        }
+    }
     else cell.accessoryType = UITableViewCellAccessoryNone;
 
     NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
@@ -122,6 +140,12 @@
     [popAlert addAction:popCancelButton];
     [popAlert addAction:popOkButton];
     [self presentViewController:popAlert animated:YES completion:nil];
+}
+
+- (void) accessoryButtonTapped: (UIControl *) button withEvent: (UIEvent *) event {
+    NSIndexPath * indexPath = [self.tableView indexPathForRowAtPoint: [[[event touchesForView: button] anyObject] locationInView: self.tableView]];
+    if (indexPath == nil) return;
+    [self.tableView.delegate tableView: self.tableView accessoryButtonTappedForRowWithIndexPath: indexPath];
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
@@ -211,43 +235,64 @@
         }
         return YES;
     } else return NO;
-    
+}
+
+-(UIView *) queueButtonView{
+    UIButton *queueButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [queueButton addTarget:self
+                    action:@selector(accessoryButtonTapped:withEvent:)
+          forControlEvents:UIControlEventTouchUpInside];
+    NSDictionary *attrDict = @{
+                               NSFontAttributeName : [UIFont boldSystemFontOfSize:12],
+                               NSForegroundColorAttributeName : [UIColor colorWithRed:0 green:.478 blue:1 alpha:1]
+                               };
+    NSAttributedString *attrString = [[NSAttributedString alloc] initWithString:@"QUEUE" attributes:attrDict];
+    [queueButton setAttributedTitle:attrString forState:UIControlStateNormal];
+    UIView *queueView = [[UIView alloc] initWithFrame:CGRectMake(0, 16, 74, 26)];
+    queueButton.frame = queueView.bounds;
+    queueView.layer.cornerRadius = 13;
+    queueView.layer.masksToBounds = YES;
+    queueView.backgroundColor = [UIColor colorWithRed:.941 green:.941 blue:.969 alpha:1];
+    queueView.alpha = 0;
+    [queueView addSubview:queueButton];
+    return queueView;
+}
+
+-(UIView *) checkedButtonView{
+    UIImageView *checkImgView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"checked.png"]];
+    checkImgView.image = [checkImgView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    checkImgView.tintColor = [UIColor colorWithRed:0 green:.478 blue:1 alpha:1];
+    checkImgView.frame = CGRectMake(10, 3, 20, 20);
+    UIView *checkView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 40, 26)];
+    checkView.layer.cornerRadius = 13;
+    checkView.layer.masksToBounds = YES;
+    checkView.backgroundColor = [UIColor colorWithRed:.941 green:.941 blue:.969 alpha:1];
+    checkView.alpha = 0;
+    [checkView addSubview:checkImgView];
+    return checkView;
 }
 
 #pragma mark - Table View Delegate
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    UIAlertController *popAlert = [UIAlertController
-                                   alertControllerWithTitle:@"Edit Name"
-                                   message:nil
-                                   preferredStyle:
-                                   UIAlertControllerStyleAlert];
-    [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
-        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        textField.text = cell.textLabel.text;
-    }];
-    UIAlertAction* popCancelButton = [UIAlertAction
-                                      actionWithTitle:@"Cancel"
-                                      style:UIAlertActionStyleCancel
-                                      handler:^(UIAlertAction * action) {
-                                      }];
-    UIAlertAction* popOkButton = [UIAlertAction
-                                  actionWithTitle:@"OK"
-                                  style:UIAlertActionStyleDefault
-                                  handler:^(UIAlertAction * action) {
-                                      NSArray *section = _objects[indexPath.section];
-                                      NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-                                      NSMutableDictionary *row = section[indexPath.row];
-                                      if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
-                                          currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
-                                      }
-                                      row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
-                                      [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
-                                      [self saveObjects];
-                                  }];
-    [popAlert addAction:popCancelButton];
-    [popAlert addAction:popOkButton];
-    [self presentViewController:popAlert animated:YES completion:nil];
+    NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
+    
+    shareDict[@"BundleID"] = self.bundleID;
+    shareDict[@"BaseDict"] = [self dataForIndex:indexPath];
+    
+    MISSharingController *sharingCont = [MISSharingController sharedInstance];
+    [sharingCont.queueArray addObject:shareDict];
+    
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    cell.accessoryView = [self checkedButtonView];
+    
+    MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
+    UIBarButtonItem *queueMore = [[UIBarButtonItem alloc] initWithTitle:@"Continue Queueing"
+                                                                  style:UIBarButtonItemStylePlain
+                                                                 target:nil
+                                                                 action:nil];
+    self.navigationItem.backBarButtonItem = queueMore;
+    [self.navigationController pushViewController:queueController animated:YES];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -368,26 +413,42 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                 [self saveObjects];
                                             }
                                         }];
-    UIAlertAction *queueButton = [UIAlertAction
-                                     actionWithTitle:@"Add to Queue"
+    UIAlertAction *editButton = [UIAlertAction
+                                     actionWithTitle:@"Edit Name"
                                      style:UIAlertActionStyleDefault
                                      handler:^(UIAlertAction * action) {
                                          
-                                         NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
-                                         
-                                         shareDict[@"BundleID"] = self.bundleID;
-                                         shareDict[@"BaseDict"] = [self dataForIndex:indexPath];
-                                         
-                                         MISSharingController *sharingCont = [MISSharingController sharedInstance];
-                                         [sharingCont.queueArray addObject:shareDict];
-                                         
-                                         MISQueueViewController *queueController = [[MISQueueViewController alloc] init];
-                                         UIBarButtonItem *queueMore = [[UIBarButtonItem alloc] initWithTitle:@"Continue Queueing"
-                                                                                                       style:UIBarButtonItemStylePlain
-                                                                                                      target:nil
-                                                                                                      action:nil];
-                                         self.navigationItem.backBarButtonItem = queueMore;
-                                         [self.navigationController pushViewController:queueController animated:YES];
+                                         UIAlertController *popAlert = [UIAlertController
+                                                                        alertControllerWithTitle:@"Edit Name"
+                                                                        message:nil
+                                                                        preferredStyle:
+                                                                        UIAlertControllerStyleAlert];
+                                         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
+                                             UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+                                             textField.text = cell.textLabel.text;
+                                         }];
+                                         UIAlertAction* popCancelButton = [UIAlertAction
+                                                                           actionWithTitle:@"Cancel"
+                                                                           style:UIAlertActionStyleCancel
+                                                                           handler:^(UIAlertAction * action) {
+                                                                           }];
+                                         UIAlertAction* popOkButton = [UIAlertAction
+                                                                       actionWithTitle:@"OK"
+                                                                       style:UIAlertActionStyleDefault
+                                                                       handler:^(UIAlertAction * action) {
+                                                                           NSArray *section = _objects[indexPath.section];
+                                                                           NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
+                                                                           NSMutableDictionary *row = section[indexPath.row];
+                                                                           if([currentDict[@"Name"] isEqualToString:row[@"Name"]]){
+                                                                               currentDict[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
+                                                                           }
+                                                                           row[@"Name"] = [self singleNameForName:popAlert.textFields[0].text];
+                                                                           [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0], indexPath] withRowAnimation: UITableViewRowAnimationAutomatic];
+                                                                           [self saveObjects];
+                                                                       }];
+                                         [popAlert addAction:popCancelButton];
+                                         [popAlert addAction:popOkButton];
+                                         [self presentViewController:popAlert animated:YES completion:nil];
                                      }];
     UIAlertAction* cancelButton = [UIAlertAction
                                    actionWithTitle:@"Cancel"
@@ -397,7 +458,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                    }];
     
     if(indexPath.section > 0)[alert addAction:makeCurrentButton];
-    if(indexPath.section > 0)[alert addAction:queueButton];
+    if(indexPath.section > 0)[alert addAction:editButton];
     [alert addAction:cancelButton];
     
     [self presentViewController:alert animated:YES completion:nil];

@@ -107,8 +107,7 @@
         } else {
             cell.accessoryView = [self queueButtonView];
         }
-    }
-    else cell.accessoryType = UITableViewCellAccessoryNone;
+    } else cell.accessoryType = UITableViewCellAccessoryNone;
 
     NSMutableDictionary *dataDict = [self dataForIndex: indexPath];
     cell.textLabel.text = dataDict[@"Name"];
@@ -181,10 +180,14 @@
 }
 
 -(NSDictionary *) activePlist {
-    NSString *onlyBundle = [self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-    CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    NSString *pathToActive = [self pathToPreferenceFromBundleID:self.bundleID];
-    return [NSDictionary dictionaryWithContentsOfFile: pathToActive];
+    CFStringRef onlyBundle = (__bridge CFStringRef)[self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+    CFArrayRef array = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
+    for(int i = 0; i < CFArrayGetCount(array); i++){
+        NSString *key = (__bridge NSString *)CFArrayGetValueAtIndex(array, i);
+        preferences[key] =  (__bridge id _Nullable)(CFPreferencesCopyAppValue((__bridge CFStringRef)key, onlyBundle));
+    }
+    return preferences;
 }
 -(void) saveObjects{
     if (@available(iOS 11, tvOS 11, *)) {
@@ -308,10 +311,10 @@
     
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     cell.accessoryView = [self checkedButtonView];
-    if(sharingCont.queueArray.count > 0){
-        self.navigationController.tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)sharingCont.queueArray.count];
-    } else {
+    if(sharingCont.queueArray.count == 0){
         self.navigationController.tabBarItem.badgeValue = nil;
+    } else {
+        self.navigationController.tabBarItem.badgeValue = [NSString stringWithFormat:@"%lu", (unsigned long)sharingCont.queueArray.count];
     }
 }
 

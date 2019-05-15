@@ -23,7 +23,7 @@
     if(bundle && dict){
         NSString *onlyBundle = [bundle stringByReplacingOccurrencesOfString:@".plist" withString:@""];
         CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-        CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        CFPreferencesAppSynchronize((__bridge CFStringRef)onlyBundle);
     }
 }
 @end

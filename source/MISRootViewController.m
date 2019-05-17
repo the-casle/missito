@@ -8,8 +8,8 @@
 	NSMutableArray *_objects;
 }
 
-- (void)loadView {
-	[super loadView];
+- (void)viewDidLoad {
+	[super viewDidLoad];
 
 	_objects = [[NSMutableArray alloc] init];
 
@@ -140,5 +140,4 @@
     [preferenceController.navigationItem setTitle: cell.textLabel.text];
     [self.navigationController pushViewController:preferenceController animated:YES];
 }
-
 @end

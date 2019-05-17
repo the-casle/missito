@@ -1,7 +1,6 @@
-Package: com.casle-midnight.missito
+Package: com.thecasle.missito
 Name: Missito
-Version: 0.0.1
-Depends: curl
+Version: 0.0.5
 Architecture: iphoneos-arm
 Description: Preference Manager
 Maintainer: Jake Kaslewicz

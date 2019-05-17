@@ -2,6 +2,7 @@
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 #import "MISQueueViewController.h"
+#import "../External/SVProgressHUD/SVProgressHUD.h"
 
 
 @implementation MISPreferenceViewController {
@@ -9,8 +10,8 @@
     NSString *_bundleIdPath;
 }
 
-- (void)loadView {
-	[super loadView];
+- (void)viewDidLoad {
+	[super viewDidLoad];
     
     BOOL isDir;
     _bundleIdPath = [NSString stringWithFormat:@"%@/%@", DIRECTORY_PATH, self.bundleID];
@@ -179,14 +180,12 @@
     return section[indexPath.row];
 }
 
--(NSDictionary *) activePlist {
+-(NSMutableDictionary *) activePlist {
     CFStringRef onlyBundle = (__bridge CFStringRef)[self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-    CFArrayRef array = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-    for(int i = 0; i < CFArrayGetCount(array); i++){
-        NSString *key = (__bridge NSString *)CFArrayGetValueAtIndex(array, i);
-        preferences[key] =  (__bridge id _Nullable)(CFPreferencesCopyAppValue((__bridge CFStringRef)key, onlyBundle));
-    }
+    CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
+    CFRelease(arrayKeys);
     return preferences;
 }
 -(void) saveObjects{
@@ -402,6 +401,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                                     [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
                                                                                      UITableViewRowAnimationFade];
                                                                                     [self saveObjects];
+                                                                                    [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
+                                                                                    [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+                                                                                    [SVProgressHUD showWithStatus:@"Syncronizing"];
+                                                                                    [SVProgressHUD dismissWithDelay:3];
                                                                                 }];
                                             UIAlertAction* popOkButton = [UIAlertAction
                                                                           actionWithTitle:@"Save"
@@ -418,6 +421,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                               [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
                                                                               [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
                                                                               [self saveObjects];
+                                                                              [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
+                                                                              [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+                                                                              [SVProgressHUD showWithStatus:@"Syncronizing"];
+                                                                              [SVProgressHUD dismissWithDelay:3];
                                                                           }];
                                             if ([currentDict[@"Name"] containsString:@"Unsaved -"]) {
                                                 [popAlert addAction:popOkButton];
@@ -434,6 +441,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                 [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
                                                  UITableViewRowAnimationFade];
                                                 [self saveObjects];
+                                                [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
+                                                [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+                                                [SVProgressHUD showWithStatus:@"Syncronizing"];
+                                                [SVProgressHUD dismissWithDelay:3];
                                             }
                                         }];
     UIAlertAction *editButton = [UIAlertAction

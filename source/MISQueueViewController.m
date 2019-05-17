@@ -6,8 +6,8 @@
 	NSMutableArray *_objects;
 }
 
-- (void)loadView {
-	[super loadView];
+- (void)viewDidLoad {
+	[super viewDidLoad];
     _objects = [[NSMutableArray alloc] init];
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
     for(NSMutableDictionary *dict in sharingCont.queueArray){

@@ -88,12 +88,12 @@
     return section[indexPath.row];
 }
 
-- (UIImage *)imageWithImage:(UIImage *)image convertToSize:(CGSize)size {
-    UIGraphicsBeginImageContext(size);
-    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
-    UIImage *destImage = UIGraphicsGetImageFromCurrentImageContext();
+- (UIImage *)imageWithImage:(UIImage *)img convertToSize:(CGSize)newSize {
+    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
+    [img drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+    img = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
-    return destImage;
+    return img;
 }
 
 #pragma mark - Table View Delegate

@@ -2,14 +2,15 @@
 #import "MISSerializationController.h"
 #import "MISSharingController.h"
 #import "NSTask.h"
+#import "../External/SVProgressHUD/SVProgressHUD.h"
 
 @implementation MISBundleViewController {
 	NSMutableArray *_objects;
     NSString *_savedBundlePath;
 }
 
-- (void)loadView {
-	[super loadView];
+- (void)viewDidLoad {
+	[super viewDidLoad];
     
     BOOL isDir;
     _savedBundlePath = [NSString stringWithFormat:@"%@/SavedBundles.plist", IMPORT_DIRECTORY_PATH];
@@ -370,6 +371,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                 NSString *bundleId = holdDict[@"BundleID"];
                                                 NSMutableDictionary *baseDict = holdDict[@"BaseDict"];
                                                 [MISSerializationController overideBundle:bundleId withDict: baseDict];
+                                                [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
+                                                [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+                                                [SVProgressHUD showWithStatus:@"Syncronizing"];
+                                                [SVProgressHUD dismissWithDelay:3];
                                             }
                                         }];
     UIAlertAction *editNameButton = [UIAlertAction

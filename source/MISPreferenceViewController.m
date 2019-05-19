@@ -181,11 +181,9 @@
 }
 
 -(NSMutableDictionary *) activePlist {
-    CFStringRef onlyBundle = (__bridge CFStringRef)[self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-    CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
-    CFRelease(arrayKeys);
+    NSString *onlyBundle = [self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+    NSUserDefaults *defaults = [[NSUserDefaults alloc] initWithSuiteName: onlyBundle];
+    NSMutableDictionary *preferences = [[defaults dictionaryRepresentation] mutableCopy];
     return preferences;
 }
 -(void) saveObjects{

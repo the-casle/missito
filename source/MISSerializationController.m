@@ -22,9 +22,8 @@
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {
     if(bundle && dict){
         NSString *onlyBundle = [bundle stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-        CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-        //CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-        CFPreferencesAppSynchronize((__bridge CFStringRef)onlyBundle);
+        NSString *appDomain = [[NSBundle mainBundle] bundleIdentifier];
+        [[NSUserDefaults standardUserDefaults] removePersistentDomainForName:appDomain];
     }
 }
 @end

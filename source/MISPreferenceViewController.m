@@ -20,21 +20,6 @@
         [fileManager createDirectoryAtPath:DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
     }
     
-    if(![self activePlist]){
-        UIAlertController *popAlert = [UIAlertController
-                                       alertControllerWithTitle:@"Error"
-                                       message:@"Contact casle. Something went wrong reading preferences"
-                                       preferredStyle:
-                                       UIAlertControllerStyleAlert];
-        UIAlertAction* popCancelButton = [UIAlertAction
-                                          actionWithTitle:@"Cancel"
-                                          style:UIAlertActionStyleCancel
-                                          handler:^(UIAlertAction * action) {
-                                          }];
-        [popAlert addAction:popCancelButton];
-        [self presentViewController:popAlert animated:YES completion:nil];
-    }
-    
     NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_bundleIdPath];
     if(!savedObjects){
         _objects = [[NSMutableArray alloc] init];
@@ -200,7 +185,7 @@
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
-    CFRelease(arrayKeys);
+    if(arrayKeys) CFRelease(arrayKeys);
     return preferences;
 }
 -(void) saveObjects{

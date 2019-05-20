@@ -344,6 +344,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                           [self.tableView insertRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:(((NSMutableArray *)_objects.lastObject).count - 1) inSection:_objects.count - 1]] withRowAnimation:UITableViewRowAnimationAutomatic];
                                           NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
                                           currentDict[@"Name"] = inputText;
+                                          currentDict[@"Plist"] = [self activePlist];
                                           
                                           [self.tableView reloadRowsAtIndexPaths: @[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
                                           [self saveObjects];

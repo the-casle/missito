@@ -74,7 +74,7 @@
     NSMutableDictionary *holdDict = [[NSMutableDictionary alloc] init];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
     dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-    holdDict[@"Name"] = [NSString stringWithFormat:@"Bundle - %@",[dateFormatter stringFromDate: [NSDate date]]];
+    holdDict[@"Name"] = [NSString stringWithFormat:@"%lu Prefs - %@", array.count,[dateFormatter stringFromDate: [NSDate date]]];
     holdDict[@"Name"] = [self singleNameForName:holdDict[@"Name"]];
     holdDict[@"Array"] = array;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{ // Make sure the animation is there.

@@ -184,10 +184,24 @@
 
 -(NSMutableDictionary *) activePlist {
     CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
-    CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
-    NSLog(@"missito_APP | bundle: %lu", CFArrayGetCount(arrayKeys));
+    if(!arrayKeys){
+        UIAlertController *popAlert = [UIAlertController
+                                       alertControllerWithTitle:@"Mismatch BundleID"
+                                       message:@"Cannot read preferences. If pirated, please install from original source."
+                                       preferredStyle:
+                                       UIAlertControllerStyleAlert];
+        UIAlertAction* popCancelButton = [UIAlertAction
+                                          actionWithTitle:@"Dismiss"
+                                          style:UIAlertActionStyleCancel
+                                          handler:^(UIAlertAction * action) {
+                                              [self.navigationController popViewControllerAnimated:YES];
+                                          }];
+        [popAlert addAction:popCancelButton];
+        [self presentViewController:popAlert animated:YES completion:nil];
+    }
     if(arrayKeys) CFRelease(arrayKeys);
     return preferences;
 }

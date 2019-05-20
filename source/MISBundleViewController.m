@@ -303,11 +303,6 @@
 }
 
 #pragma mark - Utility
-
--(NSString *) pathToPreferenceFromBundleID:(NSString *) bundle{
-    return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
-}
-
 -(NSString *) singleNameForName:(NSString *)name{
     for(int i = 0; [self doesNameExist:name]; i++){
         NSString *removeString = [NSString stringWithFormat:@" (%i)", i];

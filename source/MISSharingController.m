@@ -41,39 +41,6 @@
                         error:nil];
         }
     }
-    
-    for(NSMutableDictionary *dict in array){
-        BOOL isNew = YES;
-        for(NSString *bundle in [self preferenceArray]){
-            if([bundle isEqualToString:dict[@"BundleID"]]){
-                isNew = NO;
-            }
-        }
-        if(isNew){
-            if (@available(iOS 11, tvOS 11, *)) {
-                NSDictionary *base = dict[@"BaseDict"];
-                NSDictionary *plist = base[@"Plist"];
-                NSString *pathToPrefs = [NSString stringWithFormat:@"%@/%@",PREFERNCE_PATH, dict[@"BundleID"]];
-                [plist writeToURL:[NSURL fileURLWithPath:pathToPrefs]
-                           error:nil];
-            }
-        }
-    }
-}
--(NSMutableArray *) preferenceArray{
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_PATH
-                                                                        error:NULL];
-    NSMutableArray *devPrefs = [[NSMutableArray alloc] init];
-    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *filename = (NSString *)obj;
-        NSString *extension = [[filename pathExtension] lowercaseString];
-        if ([filename rangeOfString:@"com.apple"].location == NSNotFound && [extension isEqualToString:@"plist"]) {
-            if([filename componentsSeparatedByString:@"."].count >= 4){
-                [devPrefs addObject:filename];
-            }
-        }
-    }];
-    return devPrefs;
 }
 
 -(NSMutableArray *) arrayOfImportsForBundle:(NSString *) bundle{

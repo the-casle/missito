@@ -14,15 +14,15 @@
 	_objects = [[NSMutableArray alloc] init];
 
     NSMutableArray *nameArray = [[NSMutableArray alloc] init];
-    for(NSString *preference in [self allBundles]){
-        [nameArray addObject:[self nameFromBundleID:preference]];
+    for(NSDictionary *info in [MISSerializationController infoPlists]){
+        [nameArray addObject:info[@"CFBundleExecutable"]];
     }
     NSArray *sortedName = [nameArray sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
     for(NSString *name in sortedName){
-        for(NSString *bundle in [self allBundles]){
-            NSString *nameFromBundle = [self nameFromBundleID:bundle];
+        for(NSDictionary *info in [MISSerializationController infoPlists]){
+            NSString *nameFromBundle = info[@"CFBundleExecutable"];
             if([nameFromBundle isEqualToString:name]){
-                [_objects addObject:@{@"Name":nameFromBundle, @"BundleID":bundle}];
+                [_objects addObject:info];
                 break;
             }
         }
@@ -65,65 +65,29 @@
 	}
     
 	NSDictionary *rowDict = _objects[indexPath.row];
-    cell.textLabel.text = rowDict[@"Name"];
-    cell.detailTextLabel.text = rowDict[@"BundleID"];
+    cell.imageView.image = [self imageWithImage: [self imageForInfoPlist:rowDict] convertToSize:CGSizeMake(30,30)];
+    cell.imageView.layer.cornerRadius = 8.0;
+    cell.imageView.clipsToBounds = YES;
+    cell.textLabel.text = rowDict[@"CFBundleExecutable"];
+    cell.detailTextLabel.text = rowDict[@"CFBundleIdentifier"];
 	return cell;
 }
-
+-(UIImage *) imageForInfoPlist:(NSDictionary *)infoPlist{
+    NSString *path = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_LOADER_PATH, infoPlist[@"CFBundleExecutable"]];
+    NSDictionary *preferenceLoader = [NSDictionary dictionaryWithContentsOfFile:path];
+    NSDictionary *entry = preferenceLoader[@"entry"];
+    NSString *iconName = entry[@"icon"];
+    NSString *imagePath = [NSString stringWithFormat:@"%@/%@.bundle/%@", PREFERNCE_BUNDLE_PATH, infoPlist[@"CFBundleExecutable"], iconName];
+    return [UIImage imageWithContentsOfFile:imagePath];
+}
 
 #pragma mark - Utility
-
--(NSMutableArray *) allBundles {
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:DIRECTORY_PATH
-                                                                        error:NULL];
-    NSMutableArray *devPrefs = [self preferenceArray];
-    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *filename = (NSString *)obj;
-        BOOL isNew = YES;
-        for(NSString *preferenceId in [self preferenceArray]){
-            if([preferenceId isEqualToString: filename]){
-                isNew = NO;
-                break;
-            }
-        }
-        if(isNew){
-            [devPrefs addObject:filename];
-        }
-    }];
-    return devPrefs;
-}
-
--(NSMutableArray *) preferenceArray{
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_PATH
-                                                                        error:NULL];
-    NSMutableArray *devPrefs = [[NSMutableArray alloc] init];
-    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSString *filename = (NSString *)obj;
-        NSString *extension = [[filename pathExtension] lowercaseString];
-        if ([filename rangeOfString:@"com.apple"].location == NSNotFound && [extension isEqualToString:@"plist"]) {
-            if([filename componentsSeparatedByString:@"."].count >= 4){
-                [devPrefs addObject:filename];
-            }
-        }
-    }];
-    return devPrefs;
-}
-
--(NSString *) nameFromBundleID:(NSString *) bundle{
-    NSArray *sepWithRest = [bundle componentsSeparatedByString:@"."];
-    int count = sepWithRest.count;
-    int nameIndex = 0;
-    if(count > 1) {
-        nameIndex = count - (count - 2);
-    } else {
-        nameIndex = 0;
-    }
-    NSString *baseName = sepWithRest[nameIndex];
-    return [baseName capitalizedString];
-}
-
--(NSString *) pathToPreferenceFromBundleID:(NSString *) bundle{
-    return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
+- (UIImage *)imageWithImage:(UIImage *)img convertToSize:(CGSize)newSize {
+    UIGraphicsBeginImageContextWithOptions(newSize, NO, 0.0);
+    [img drawInRect:CGRectMake(0, 0, newSize.width, newSize.height)];
+    img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return img;
 }
 
 #pragma mark - Table View Delegate
@@ -135,8 +99,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     MISPreferenceViewController *preferenceController = [[MISPreferenceViewController alloc] init];
-    NSDictionary *rowDict = _objects[indexPath.row];
-    preferenceController.bundleID = rowDict[@"BundleID"];
+    preferenceController.infoPlist = _objects[indexPath.row];
     [preferenceController.navigationItem setTitle: cell.textLabel.text];
     [self.navigationController pushViewController:preferenceController animated:YES];
 }

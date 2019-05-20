@@ -8,13 +8,16 @@
 @implementation MISPreferenceViewController {
 	NSMutableArray *_objects;
     NSString *_bundleIdPath;
+    NSString *_bundleID;
 }
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
     
     BOOL isDir;
-    _bundleIdPath = [NSString stringWithFormat:@"%@/%@", DIRECTORY_PATH, self.bundleID];
+    _bundleID = self.infoPlist[@"CFBundleIdentifier"];
+    _bundleIdPath = [NSString stringWithFormat:@"%@/%@.plist", DIRECTORY_PATH, _bundleID];
+    
     NSFileManager *fileManager= [NSFileManager defaultManager];
     if(![fileManager fileExistsAtPath:DIRECTORY_PATH isDirectory:&isDir]){
         [fileManager createDirectoryAtPath:DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
@@ -35,7 +38,7 @@
     } else {
         _objects = savedObjects;
     }
-    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
+    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:_bundleID]){
         NSMutableDictionary *dict = [importDict mutableCopy];
         dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
         [_objects.lastObject addObject: dict];
@@ -59,7 +62,7 @@
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     
-    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:self.bundleID]){
+    for(NSMutableDictionary *importDict in [[MISSharingController sharedInstance] arrayOfImportsForBundle:_bundleID]){
         NSMutableDictionary *dict = [importDict mutableCopy];
         dict[@"Name"] = [self singleNameForName:dict[@"Name"]];
         [_objects.lastObject addObject: dict];
@@ -98,7 +101,7 @@
         for(NSMutableDictionary *shareDict in sharingCont.queueArray){ // THIS IS BUGGED STILL.
             NSMutableDictionary *base = shareDict[@"BaseDict"];
             NSMutableDictionary *currentDict = [self dataForIndex:indexPath];
-            if([currentDict[@"Name"] isEqualToString:base[@"Name"]]){
+            if([self isDictionary:currentDict[@"Plist"] equalToDict: base[@"Plist"]] && [currentDict[@"Name"] isEqualToString:base[@"Name"]]){
                 isQueued = YES;
                 break;
             }
@@ -170,18 +173,13 @@
 }
 
 #pragma mark - Utility
-
--(NSString *) pathToPreferenceFromBundleID:(NSString *) bundle{
-    return [NSString stringWithFormat: @"%@/%@", PREFERNCE_PATH, bundle];
-}
-
 -(id) dataForIndex:(NSIndexPath *) indexPath {
     NSArray *section = _objects[indexPath.section];
     return section[indexPath.row];
 }
 
 -(NSMutableDictionary *) activePlist {
-    CFStringRef onlyBundle = (__bridge CFStringRef)[self.bundleID stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+    CFStringRef onlyBundle = (__bridge CFStringRef)_bundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
@@ -195,15 +193,11 @@
     }
     
     NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    [MISSerializationController overideBundle:self.bundleID withDict:currentDict];
+    [MISSerializationController overideBundle:_bundleID withDict:currentDict];
 }
 
 -(NSString *) unsavedPrefernceString{
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSDate *prefEditDate = [[fileManager attributesOfItemAtPath:[self pathToPreferenceFromBundleID:self.bundleID] error:NULL] fileModificationDate];
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
-    dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-    NSString *formated = [NSString stringWithFormat:@"Unsaved - %@",[dateFormatter stringFromDate: prefEditDate]];
+    NSString *formated = @"Unsaved - Click here to save";
     return formated;
 }
 
@@ -302,7 +296,7 @@
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
     NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
     
-    shareDict[@"BundleID"] = self.bundleID;
+    shareDict[@"BundleID"] = _bundleID;
     shareDict[@"BaseDict"] = [self dataForIndex:indexPath];
     
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
@@ -334,7 +328,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
             dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-            textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
+            textField.text = [NSString stringWithFormat:@"%@ - %@", self.infoPlist[@"CFBundleExecutable"],[dateFormatter stringFromDate: [NSDate date]]];
         }];
         UIAlertAction* popCancelButton = [UIAlertAction
                                           actionWithTitle:@"Cancel"

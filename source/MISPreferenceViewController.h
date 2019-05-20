@@ -1,3 +1,3 @@
 @interface MISPreferenceViewController : UITableViewController
-@property (nonatomic, retain) NSString *bundleID;
+@property (nonatomic, retain) NSDictionary *infoPlist;
 @end

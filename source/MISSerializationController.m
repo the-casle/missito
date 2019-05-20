@@ -21,10 +21,43 @@
 }
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {
     if(bundle && dict){
-        NSString *onlyBundle = [bundle stringByReplacingOccurrencesOfString:@".plist" withString:@""];
-        CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+        CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
         //CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-        CFPreferencesAppSynchronize((__bridge CFStringRef)onlyBundle);
+        CFPreferencesAppSynchronize((__bridge CFStringRef)bundle);
     }
 }
+
++(NSMutableArray *) infoPlists{
+    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:PREFERNCE_LOADER_PATH
+                                                                        error:NULL];
+    NSMutableArray *rawPrefs = [[NSMutableArray alloc] init];
+    [dirs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSString *filename = (NSString *)obj;
+        [rawPrefs addObject:filename];
+    }];
+    NSMutableArray *sortedPrefs = [[NSMutableArray alloc] init];
+    for(NSString *fileName in rawPrefs){
+        NSString *bundleNoPlist = [fileName stringByReplacingOccurrencesOfString:@"plist" withString:@"bundle"];
+        NSString *path = [NSString stringWithFormat:@"%@/%@/Info.plist", PREFERNCE_BUNDLE_PATH, bundleNoPlist];
+        NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
+        if(dict){
+            [sortedPrefs addObject:dict];
+        }
+    }
+    return sortedPrefs;
+}
+
++(NSString *) nameFromBundleID:(NSString *) bundle{
+    NSArray *sepWithRest = [bundle componentsSeparatedByString:@"."];
+    int count = sepWithRest.count;
+    int nameIndex = 0;
+    if(count > 1) {
+        nameIndex = count - (count - 2);
+    } else {
+        nameIndex = 0;
+    }
+    NSString *baseName = sepWithRest[nameIndex];
+    return [baseName capitalizedString];
+}
+
 @end

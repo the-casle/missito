@@ -94,7 +94,7 @@
 	if (!cell) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
 	}
-    if(indexPath.section > 0){
+    if(indexPath.section){ // Not 0
         MISSharingController *sharingCont = [MISSharingController sharedInstance];
         BOOL isQueued = NO;
         

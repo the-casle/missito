@@ -7,8 +7,9 @@
 
 @implementation MISPreferenceViewController {
 	NSMutableArray *_objects;
-    NSString *_bundleIdPath;
+    NSString *_bundleIDPath;
     NSString *_bundleID;
+    NSString *_defaultsBundleID;
 }
 
 - (void)viewDidLoad {
@@ -16,14 +17,17 @@
     
     BOOL isDir;
     _bundleID = self.infoPlist[@"CFBundleIdentifier"];
-    _bundleIdPath = [NSString stringWithFormat:@"%@/%@.plist", DIRECTORY_PATH, _bundleID];
+    _bundleIDPath = [NSString stringWithFormat:@"%@/%@.plist", DIRECTORY_PATH, _bundleID];
+    
+    CFArrayRef arrayKeys = CFPreferencesCopyKeyList((__bridge CFStringRef)_bundleID, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    _defaultsBundleID = arrayKeys ? _bundleID : [self defaultsBundleID];
     
     NSFileManager *fileManager= [NSFileManager defaultManager];
     if(![fileManager fileExistsAtPath:DIRECTORY_PATH isDirectory:&isDir]){
         [fileManager createDirectoryAtPath:DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
     }
     
-    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_bundleIdPath];
+    NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_bundleIDPath];
     if(!savedObjects){
         _objects = [[NSMutableArray alloc] init];
                     NSMutableArray *firstSection = [[NSMutableArray alloc] init];
@@ -101,7 +105,7 @@
         for(NSMutableDictionary *shareDict in sharingCont.queueArray){ // THIS IS BUGGED STILL.
             NSMutableDictionary *base = shareDict[@"BaseDict"];
             NSMutableDictionary *currentDict = [self dataForIndex:indexPath];
-            if([self isDictionary:currentDict[@"Plist"] equalToDict: base[@"Plist"]] && [currentDict[@"Name"] isEqualToString:base[@"Name"]]){
+            if([currentDict[@"Plist"] isEqualToDictionary: base[@"Plist"]] && [currentDict[@"Name"] isEqualToString:base[@"Name"]]){
                 isQueued = YES;
                 break;
             }
@@ -179,14 +183,11 @@
 }
 
 -(NSMutableDictionary *) activePlist {
-    CFStringRef onlyBundle = (__bridge CFStringRef)_bundleID;
+    CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    if(!arrayKeys){
-        onlyBundle = (__bridge CFStringRef)[self defaultsBundleID];
-        arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    }
     CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
+    NSLog(@"missito_APP | bundle: %lu", CFArrayGetCount(arrayKeys));
     if(arrayKeys) CFRelease(arrayKeys);
     return preferences;
 }
@@ -219,7 +220,7 @@
 
 -(void) saveObjects{
     if (@available(iOS 11, tvOS 11, *)) {
-        [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]
+        [_objects writeToURL:[NSURL fileURLWithPath:_bundleIDPath]
                        error:nil];
     }
 }
@@ -249,21 +250,11 @@
     
 -(void) updateCurrentCell{
     NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    if (![self isDictionary:currentDict[@"Plist"] equalToDict:[self activePlist]]) {
+    if (![currentDict[@"Plist"] isEqualToDictionary:[self activePlist]]) {
         NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
         currentDict[@"Name"] = [self unsavedPrefernceString];
         [self.tableView reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation: UITableViewRowAnimationAutomatic];
     }
-}
--(BOOL) isDictionary:(NSDictionary *) dict equalToDict:(NSDictionary *)otherDict{ // for some reason the docs one doesn't work idek
-    if([dict isKindOfClass:[NSMutableDictionary class]] && [otherDict isKindOfClass:[NSMutableDictionary class]]){
-        for(NSString *key in dict.allKeys){
-            if(![[dict objectForKey:key] isEqual: [otherDict objectForKey:key]]){
-                return NO;
-            }
-        }
-        return YES;
-    } else return NO;
 }
 
 -(void) queuePush{
@@ -325,6 +316,7 @@
     NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
     
     shareDict[@"BundleID"] = _bundleID;
+    shareDict[@"DefaultsBundleID"] = _defaultsBundleID;
     shareDict[@"BaseDict"] = [self dataForIndex:indexPath];
     
     MISSharingController *sharingCont = [MISSharingController sharedInstance];
@@ -423,8 +415,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                                     [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
                                                                                     [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
                                                                                      UITableViewRowAnimationFade];
-                                                                                    NSLog(@"missito_APP | %@, %@",_bundleID, selectedDict[@"Plist"] );
-                                                                                    [MISSerializationController overideBundle:_bundleID withDict:selectedDict];
+                                                                                    [MISSerializationController overideBundle:_defaultsBundleID withDict:selectedDict];
                                                                                     [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
                                                                                     [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
                                                                                     [SVProgressHUD showWithStatus:@"Syncronizing"];
@@ -445,7 +436,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                               [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
                                                                               [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
                                                                               [self saveObjects];
-                                                                              [MISSerializationController overideBundle:_bundleID withDict:selectedDict];
+                                                                              [MISSerializationController overideBundle:_defaultsBundleID withDict:selectedDict];
                                                                               [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
                                                                               [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
                                                                               [SVProgressHUD showWithStatus:@"Syncronizing"];

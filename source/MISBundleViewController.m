@@ -363,7 +363,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                             NSMutableDictionary *row = _objects[indexPath.row];
                                             NSMutableArray *holdArray = row[@"Array"];
                                             for(NSMutableDictionary *holdDict in holdArray){
-                                                NSString *bundleId = holdDict[@"BundleID"];
+                                                NSString *bundleId = holdDict[@"DefaultsBundleID"];
                                                 NSMutableDictionary *baseDict = holdDict[@"BaseDict"];
                                                 [MISSerializationController overideBundle:bundleId withDict: baseDict];
                                                 [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];

@@ -191,9 +191,6 @@
         [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]
                        error:nil];
     }
-    
-    NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;
-    [MISSerializationController overideBundle:_bundleID withDict:currentDict];
 }
 
 -(NSString *) unsavedPrefernceString{
@@ -394,7 +391,8 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                                     [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
                                                                                     [self.tableView deleteRowsAtIndexPaths: @[currentIndex] withRowAnimation:
                                                                                      UITableViewRowAnimationFade];
-                                                                                    [self saveObjects];
+                                                                                    NSLog(@"missito_APP | %@, %@",_bundleID, selectedDict[@"Plist"] );
+                                                                                    [MISSerializationController overideBundle:_bundleID withDict:selectedDict];
                                                                                     [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
                                                                                     [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
                                                                                     [SVProgressHUD showWithStatus:@"Syncronizing"];
@@ -415,6 +413,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                                                               [_objects[currentIndex.section] removeObjectAtIndex: currentIndex.row];
                                                                               [self.tableView moveRowAtIndexPath: currentIndex toIndexPath: [NSIndexPath indexPathForRow:(((NSMutableArray *)_objects[indexPath.section]).count - 1) inSection:indexPath.section]];
                                                                               [self saveObjects];
+                                                                              [MISSerializationController overideBundle:_bundleID withDict:selectedDict];
                                                                               [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
                                                                               [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
                                                                               [SVProgressHUD showWithStatus:@"Syncronizing"];

@@ -19,7 +19,7 @@
     [_objects addObject:thirdSection];
     
     [firstSection addObject: @{@"Title":@"the casle", @"Subtitle":@"he made it or something", @"Link":@"https://twitter.com/the_casle", @"Image":@"https://twitter.com/the_casle/profile_image?size=original"}];
-    [firstSection addObject: @{@"Title":@"Donate", @"Subtitle":@"PayPal", @"Link":@"https://paypal.me/thecasle", @"Image":@"https://www.paypalobjects.com/webstatic/icon/pp258.png"}];
+    [firstSection addObject: @{@"Title":@"Donate", @"Subtitle":@"money is nice", @"Link":@"https://paypal.me/thecasle", @"Image":@"https://www.paypalobjects.com/webstatic/icon/pp258.png"}];
     [secondSection addObject: @{@"Title":@"Bugs/Feature Requests", @"Subtitle":@"Submit an issue on GitHub", @"Link":@"https://github.com/the-casle/missito/issues", @"Image":@"https://camo.githubusercontent.com/7710b43d0476b6f6d4b4b2865e35c108f69991f3/68747470733a2f2f7777772e69636f6e66696e6465722e636f6d2f646174612f69636f6e732f6f637469636f6e732f313032342f6d61726b2d6769746875622d3235362e706e67"}];
     [secondSection addObject: @{@"Title":@"Tutorial", @"Subtitle":@"Link to write up", @"Link":@"https://github.com/the-casle/missito/issues", @"Image":@"https://images-eu.ssl-images-amazon.com/images/I/418PuxYS63L.png"}];
     [thirdSection addObject: @{@"Title":@"midnightchips", @"Subtitle":@"good friend and helped some", @"Link":@"https://twitter.com/midnightchip", @"Image":@"https://twitter.com/midnightchip/profile_image?size=original"}];

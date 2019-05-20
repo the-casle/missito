@@ -181,11 +181,43 @@
 -(NSMutableDictionary *) activePlist {
     CFStringRef onlyBundle = (__bridge CFStringRef)_bundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    if(!arrayKeys){
+        onlyBundle = (__bridge CFStringRef)[self defaultsBundleID];
+        arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
+    }
+    NSLog(@"missito_APP %@ id: %@", arrayKeys, onlyBundle);
     CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
     if(arrayKeys) CFRelease(arrayKeys);
     return preferences;
 }
+
+-(NSString *) defaultsBundleID {
+    NSString *pathToBundle = [NSString stringWithFormat:@"%@/%@.bundle", PREFERNCE_BUNDLE_PATH, self.infoPlist[@"CFBundleExecutable"]];
+    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pathToBundle error:nil];
+    for(NSString *filename in dirs){
+        if([filename rangeOfString:@".plist"].location != NSNotFound) {
+            NSString *dictString = [NSString stringWithFormat:@"%@/%@",pathToBundle, filename];
+            NSDictionary *possibleDict = [NSDictionary dictionaryWithContentsOfFile:dictString];
+            NSArray *itemArray = possibleDict[@"items"];
+            if(itemArray){
+                NSString *backup = nil;
+                for(NSDictionary *cell in itemArray){
+                    NSString *possibleDefaults = cell[@"defaults"];
+                    if(possibleDefaults){
+                        backup = possibleDefaults;
+                        if([possibleDefaults rangeOfString:@"color" options:NSCaseInsensitiveSearch].location == NSNotFound){
+                            return possibleDefaults;
+                        }
+                    }
+                }
+                return backup;
+            }
+        }
+    }
+    return _bundleID; //If it cant find it
+}
+
 -(void) saveObjects{
     if (@available(iOS 11, tvOS 11, *)) {
         [_objects writeToURL:[NSURL fileURLWithPath:_bundleIdPath]

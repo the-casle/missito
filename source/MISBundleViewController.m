@@ -74,7 +74,7 @@
     NSMutableDictionary *holdDict = [[NSMutableDictionary alloc] init];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
     dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-    holdDict[@"Name"] = [NSString stringWithFormat:@"%lu Prefs - %@", array.count,[dateFormatter stringFromDate: [NSDate date]]];
+    holdDict[@"Name"] = [NSString stringWithFormat:@"Bundle - %@", [dateFormatter stringFromDate: [NSDate date]]];
     holdDict[@"Name"] = [self singleNameForName:holdDict[@"Name"]];
     holdDict[@"Array"] = array;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, .2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{ // Make sure the animation is there.
@@ -267,12 +267,13 @@
 	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
 
 	if (!cell) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
 	}
     cell.accessoryType = UITableViewCellAccessoryDetailButton;
     
     NSMutableDictionary *row = _objects[indexPath.row];
     cell.textLabel.text = row[@"Name"];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%lu Preference(s)", ((NSArray *)row[@"Array"]).count];
 	return cell;
 }
 
@@ -323,12 +324,14 @@
 
 #pragma mark - Table View Delegate
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
-    NSString *message = @"";
+    NSString *message = nil;
     NSMutableDictionary *row = _objects[indexPath.row];
     NSMutableArray *holdArray = row[@"Array"];
     for(NSMutableDictionary *holdDict in holdArray){
         NSString *bundleId = holdDict[@"BundleID"];
-        message = [NSString stringWithFormat:@"%@\n%@", message, bundleId];
+        if(message) message = [NSString stringWithFormat:@"%@\n%@", message, bundleId];
+        else  message = bundleId;
+        
     }
 
     UIAlertController *alert = [UIAlertController

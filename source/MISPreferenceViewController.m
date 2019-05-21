@@ -201,15 +201,15 @@
 
 -(NSString *) defaultsBundleID {
     NSString *pathToBundle = [NSString stringWithFormat:@"%@/%@.bundle", PREFERNCE_BUNDLE_PATH, self.infoPlist[@"CFBundleExecutable"]];
-    NSArray* dirs = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:pathToBundle error:nil];
+    NSSet* dirs = [NSSet setWithArray:[[NSFileManager defaultManager] contentsOfDirectoryAtPath:pathToBundle error:nil]];
     NSString *backup = nil;
     for(NSString *filename in dirs){
         if([filename rangeOfString:@".plist"].location != NSNotFound) {
             NSString *dictString = [NSString stringWithFormat:@"%@/%@",pathToBundle, filename];
             NSDictionary *possibleDict = [NSDictionary dictionaryWithContentsOfFile:dictString];
-            NSArray *itemArray = possibleDict[@"items"];
-            if(itemArray){
-                for(NSDictionary *cell in itemArray){
+            NSSet *itemSet = [NSSet setWithArray: possibleDict[@"items"]];
+            if(itemSet){
+                for(NSDictionary *cell in itemSet){
                     NSString *possibleDefaults = cell[@"defaults"];
                     if(possibleDefaults){
                         backup = possibleDefaults;

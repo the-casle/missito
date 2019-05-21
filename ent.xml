@@ -14,10 +14,6 @@
 	<true/>
 	<key>platform-application</key>
 	<true/>
-    <key>com.apple.SystemConfiguration.SCPreferences-read-access</key>
-    <true/>
-    <key>com.apple.SystemConfiguration.SCPreferences-read-access</key>
-    <true/>
     <key>com.apple.private.security.storage.preferences</key>
     <true/>
 </dict>

@@ -4,6 +4,15 @@
 
 +(NSString *)serializeDictionary:(NSMutableDictionary *)dict {
     NSMutableDictionary *mutable = [dict mutableCopy];
+    if(![NSJSONSerialization isValidJSONObject:mutable]){
+        NSMutableDictionary *newDict = [[NSMutableDictionary alloc] init];
+        for(NSString *key in mutable.allKeys){
+            if([NSJSONSerialization isValidJSONObject:mutable[key]]){
+                newDict[key] = mutable[key];
+            }
+        }
+        mutable = newDict;
+    }
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:mutable
                                                        options:0
                                                          error:nil];
@@ -39,8 +48,12 @@
     for(NSString *fileName in rawPrefs){
         NSString *bundleNoPlist = [fileName stringByReplacingOccurrencesOfString:@"plist" withString:@"bundle"];
         NSString *path = [NSString stringWithFormat:@"%@/%@/Info.plist", PREFERNCE_BUNDLE_PATH, bundleNoPlist];
-        NSDictionary *dict = [NSDictionary dictionaryWithContentsOfFile:path];
+        NSMutableDictionary *dict = [[NSDictionary dictionaryWithContentsOfFile:path] mutableCopy];
         if(dict){
+            NSString *path = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_LOADER_PATH, dict[@"CFBundleExecutable"]];
+            NSDictionary *preferenceLoader = [NSDictionary dictionaryWithContentsOfFile:path];
+            NSDictionary *entry = preferenceLoader[@"entry"];
+            dict[@"label"] = entry[@"label"];
             [sortedPrefs addObject:dict];
         }
     }

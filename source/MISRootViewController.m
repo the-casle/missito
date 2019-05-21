@@ -15,12 +15,12 @@
 
     NSMutableArray *nameArray = [[NSMutableArray alloc] init];
     for(NSDictionary *info in [MISSerializationController infoPlists]){
-        [nameArray addObject:info[@"CFBundleExecutable"]];
+        [nameArray addObject:info[@"label"]];
     }
     NSArray *sortedName = [nameArray sortedArrayUsingSelector: @selector(caseInsensitiveCompare:)];
     for(NSString *name in sortedName){
         for(NSDictionary *info in [MISSerializationController infoPlists]){
-            NSString *nameFromBundle = info[@"CFBundleExecutable"];
+            NSString *nameFromBundle = info[@"label"];
             if([nameFromBundle isEqualToString:name]){
                 [_objects addObject:info];
                 break;
@@ -68,7 +68,7 @@
     cell.imageView.image = [self imageWithImage: [self imageForInfoPlist:rowDict] convertToSize:CGSizeMake(30,30)];
     cell.imageView.layer.cornerRadius = 8.0;
     cell.imageView.clipsToBounds = YES;
-    cell.textLabel.text = rowDict[@"CFBundleExecutable"];
+    cell.textLabel.text = rowDict[@"label"];
     cell.detailTextLabel.text = rowDict[@"CFBundleIdentifier"];
 	return cell;
 }

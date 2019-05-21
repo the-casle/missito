@@ -185,6 +185,7 @@
 -(NSMutableDictionary *) activePlist {
     CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    NSLog(@"missito_APP | bundle: %@ keys: %@", onlyBundle, arrayKeys);
     CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
     if(!arrayKeys){
@@ -362,7 +363,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
         [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
             dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-            textField.text = [NSString stringWithFormat:@"%@ - %@", self.infoPlist[@"CFBundleExecutable"],[dateFormatter stringFromDate: [NSDate date]]];
+            textField.text = [NSString stringWithFormat:@"%@ - %@", self.infoPlist[@"label"],[dateFormatter stringFromDate: [NSDate date]]];
         }];
         UIAlertAction* popCancelButton = [UIAlertAction
                                           actionWithTitle:@"Cancel"

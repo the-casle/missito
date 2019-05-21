@@ -457,6 +457,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                        [alert addAction:forever];
                                        [alert addAction:cancelButton];
                                        
+                                       UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+                                       alert.popoverPresentationController.sourceView = cell;
+                                       alert.popoverPresentationController.sourceRect = CGRectMake(0, 0, cell.bounds.size.width, cell.bounds.size.height);
+                                       alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
                                        [self presentViewController:alert animated:YES completion:nil];
 
                                        
@@ -473,6 +477,10 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [alert addAction:shareButton];
     [alert addAction:cancelButton];
     
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    alert.popoverPresentationController.sourceView = cell;
+    alert.popoverPresentationController.sourceRect = CGRectMake(0, 0, cell.bounds.size.width, cell.bounds.size.height);
+    alert.popoverPresentationController.permittedArrowDirections = UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
     [self presentViewController:alert animated:YES completion:nil];
 }
 

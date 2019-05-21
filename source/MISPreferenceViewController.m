@@ -19,12 +19,16 @@
     _bundleID = self.infoPlist[@"CFBundleIdentifier"];
     _bundleIDPath = [NSString stringWithFormat:@"%@/%@.plist", DIRECTORY_PATH, _bundleID];
     
-    CFArrayRef arrayKeys = CFPreferencesCopyKeyList((__bridge CFStringRef)_bundleID, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-    _defaultsBundleID = arrayKeys ? _bundleID : [self defaultsBundleID];
-    
     NSFileManager *fileManager= [NSFileManager defaultManager];
     if(![fileManager fileExistsAtPath:DIRECTORY_PATH isDirectory:&isDir]){
         [fileManager createDirectoryAtPath:DIRECTORY_PATH withIntermediateDirectories:YES attributes:nil error:NULL];
+    }
+    
+    NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _bundleID];
+    if([fileManager fileExistsAtPath:pathToFile isDirectory:&isDir]){
+        _defaultsBundleID = _bundleID;
+    } else {
+        _defaultsBundleID = [self defaultsBundleID];
     }
     
     NSMutableArray *savedObjects = [NSMutableArray arrayWithContentsOfFile:_bundleIDPath];
@@ -182,29 +186,17 @@
     return section[indexPath.row];
 }
 
--(NSMutableDictionary *) activePlist {
+-(NSDictionary *) activePlist {    
     CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    NSLog(@"missito_APP | bundle: %@ keys: %@", onlyBundle, arrayKeys);
-    CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
-    if(!arrayKeys){
-        UIAlertController *popAlert = [UIAlertController
-                                       alertControllerWithTitle:@"Mismatch BundleID"
-                                       message:@"Cannot read preferences. If pirated, please install from original source."
-                                       preferredStyle:
-                                       UIAlertControllerStyleAlert];
-        UIAlertAction* popCancelButton = [UIAlertAction
-                                          actionWithTitle:@"Dismiss"
-                                          style:UIAlertActionStyleCancel
-                                          handler:^(UIAlertAction * action) {
-                                              [self.navigationController popViewControllerAnimated:YES];
-                                          }];
-        [popAlert addAction:popCancelButton];
-        [self presentViewController:popAlert animated:YES completion:nil];
+    if(arrayKeys){
+        CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
+        CFRelease(arrayKeys);
+        return preferences;
     }
-    if(arrayKeys) CFRelease(arrayKeys);
-    return preferences;
+    NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _defaultsBundleID];
+    return [NSDictionary dictionaryWithContentsOfFile:pathToFile];
 }
 
 -(NSString *) defaultsBundleID {

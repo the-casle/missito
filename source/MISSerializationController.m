@@ -28,10 +28,19 @@
     NSMutableDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableLeaves error:&error];
     return dict;
 }
+
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {
     if(bundle && dict){
-        CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesCurrentHost);
-        //CFPreferencesSynchronize((__bridge CFStringRef)onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        CFArrayRef arrayKeys = CFPreferencesCopyKeyList((__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        if(arrayKeys){
+            CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        } else {
+            NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, bundle];
+            if (@available(iOS 11, tvOS 11, *)) {
+                [dict[@"Plist"] writeToURL:[NSURL fileURLWithPath:pathToFile]
+                               error:nil];
+            }
+        }
         CFPreferencesAppSynchronize((__bridge CFStringRef)bundle);
     }
 }

@@ -1,4 +1,5 @@
 #import "MISSettingsViewController.h"
+#import "MISSerializationController.h"
 
 @implementation MISSettingsViewController {
 	NSMutableArray *_objects;
@@ -14,17 +15,24 @@
     NSMutableArray *firstSection = [[NSMutableArray alloc] init];
     NSMutableArray *secondSection = [[NSMutableArray alloc] init];
     NSMutableArray *thirdSection = [[NSMutableArray alloc] init];
+    NSMutableArray *forthSection = [[NSMutableArray alloc] init];
     [_objects addObject:firstSection];
     [_objects addObject:secondSection];
     [_objects addObject:thirdSection];
+    [_objects addObject:forthSection];
     
     [firstSection addObject: @{@"Title":@"the casle", @"Subtitle":@"he made it or something", @"Link":@"https://twitter.com/the_casle", @"Image":@"https://twitter.com/the_casle/profile_image?size=original"}];
     [firstSection addObject: @{@"Title":@"Donate", @"Subtitle":@"money is nice", @"Link":@"https://paypal.me/thecasle", @"Image":@"https://www.paypalobjects.com/webstatic/icon/pp258.png"}];
     [secondSection addObject: @{@"Title":@"Bugs/Feature Requests", @"Subtitle":@"oh no it didnt work", @"Link":@"https://github.com/the-casle/missito/issues", @"Image":@"https://camo.githubusercontent.com/7710b43d0476b6f6d4b4b2865e35c108f69991f3/68747470733a2f2f7777772e69636f6e66696e6465722e636f6d2f646174612f69636f6e732f6f637469636f6e732f313032342f6d61726b2d6769746875622d3235362e706e67"}];
     [secondSection addObject: @{@"Title":@"Tutorial", @"Subtitle":@"Link to write up", @"Link":@"https://github.com/the-casle/missito/issues", @"Image":@"https://images-eu.ssl-images-amazon.com/images/I/418PuxYS63L.png"}];
+    
     [thirdSection addObject: @{@"Title":@"midnightchips", @"Subtitle":@"good friend and helped some", @"Link":@"https://twitter.com/midnightchip", @"Image":@"https://twitter.com/midnightchip/profile_image?size=original"}];
     [thirdSection addObject: @{@"Title":@"DGh0st", @"Subtitle":@"base64 dumb", @"Link":@"https://twitter.com/D_Gh0st", @"Image":@"https://twitter.com/D_Gh0st/profile_image?size=original"}];
-     [thirdSection addObject: @{@"Title":@"Karim", @"Subtitle":@"preferences dumb", @"Link":@"https://twitter.com/karimo299", @"Image":@"https://twitter.com/karimo299/profile_image?size=original"}];
+    [thirdSection addObject: @{@"Title":@"Karim", @"Subtitle":@"preferences dumb", @"Link":@"https://twitter.com/karimo299", @"Image":@"https://twitter.com/karimo299/profile_image?size=original"}];
+    
+    [forthSection addObject: @{@"Title":@"Clear Cache", @"Subtitle":@"Clear uninstalled tweak saves", @"Image":@"https://cdn3.iconfinder.com/data/icons/cleaning-icons/512/Bucket_with_Soap-512.png", @"Block":^{
+        [MISSerializationController clearCache];
+    }}];
     
     [self.tableView reloadData];
 }
@@ -76,6 +84,9 @@
         case 2:
             return @"Special Thanks";
             break;
+        case 3:
+            return @"Utility";
+            break;
             
         default:
             return @"Special Thanks";
@@ -102,18 +113,22 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     NSMutableDictionary *dict = [self dataForIndex:indexPath];
     NSString *linkString = dict[@"Link"];
-    if ([linkString rangeOfString:@"Twitter" options:NSCaseInsensitiveSearch].location == NSNotFound) {
-        UIApplication *app = [UIApplication sharedApplication];
-        NSURL *link = [NSURL URLWithString:linkString];
-        if ([app canOpenURL:link]){
-            [app openURL:link options:@{} completionHandler:nil];
-        } else{
-            NSURLComponents *components = [NSURLComponents componentsWithURL:link resolvingAgainstBaseURL:YES];
-            components.scheme = @"https";
-            [app openURL:components.URL options:@{} completionHandler:nil];
+    if(linkString){
+        if ([linkString rangeOfString:@"Twitter" options:NSCaseInsensitiveSearch].location == NSNotFound) {
+            UIApplication *app = [UIApplication sharedApplication];
+            NSURL *link = [NSURL URLWithString:linkString];
+            if ([app canOpenURL:link]){
+                [app openURL:link options:@{} completionHandler:nil];
+            } else{
+                NSURLComponents *components = [NSURLComponents componentsWithURL:link resolvingAgainstBaseURL:YES];
+                components.scheme = @"https";
+                [app openURL:components.URL options:@{} completionHandler:nil];
+            }
+        } else {
+            [self _openTwitterForUser:linkString];
         }
     } else {
-        [self _openTwitterForUser:linkString];
+        ((void (^)(void))dict[@"Block"])();
     }
 }
 - (void)_openTwitterForUser:(NSString*)link {

@@ -11,4 +11,5 @@
 +(NSMutableDictionary *)deserializeDictionaryFromData:(NSData *)data;
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict;
 +(NSMutableArray *) infoPlists;
++(void)clearCache;
 @end

@@ -391,7 +391,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                  UIAlertControllerStyleActionSheet];
     
     UIAlertAction *makeCurrentButton = [UIAlertAction
-                                        actionWithTitle:@"Make Current"
+                                        actionWithTitle:@"Activate"
                                         style:UIAlertActionStyleDefault
                                         handler:^(UIAlertAction * action) {
                                             NSMutableDictionary *currentDict = ((NSArray *)_objects.firstObject).firstObject;

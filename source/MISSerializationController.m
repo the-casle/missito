@@ -13,10 +13,8 @@
         }
         mutable = newDict;
     }
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:mutable
-                                                       options:0
-                                                         error:nil];
-    if (! jsonData) {
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:mutable options:0 error:nil];
+    if (!jsonData) {
         return @"{}";
     } else {
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
@@ -69,17 +67,24 @@
     return sortedPrefs;
 }
 
-+(NSString *) nameFromBundleID:(NSString *) bundle{
-    NSArray *sepWithRest = [bundle componentsSeparatedByString:@"."];
-    int count = sepWithRest.count;
-    int nameIndex = 0;
-    if(count > 1) {
-        nameIndex = count - (count - 2);
-    } else {
-        nameIndex = 0;
++(void)clearCache{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSSet* dirs = [NSSet setWithArray: [fileManager contentsOfDirectoryAtPath:DIRECTORY_PATH error:NULL]];
+    for(NSString *fileName in dirs){
+        NSString *fileNoPlist = [fileName stringByReplacingOccurrencesOfString:@".plist" withString:@""];
+        BOOL exists = NO;
+        for(NSDictionary *infoPlists in [self infoPlists]){
+            NSLog(@"missito_APP | %@ %@", fileNoPlist, infoPlists[@"CFBundleIdentifier"]);
+            if([fileNoPlist isEqualToString: infoPlists[@"CFBundleIdentifier"]]){
+                exists = YES;
+                break;
+            }
+        }
+        if(!exists){
+            [fileManager removeItemAtPath:[NSString stringWithFormat:@"%@/%@",DIRECTORY_PATH, fileName] error:nil];
+        }
     }
-    NSString *baseName = sepWithRest[nameIndex];
-    return [baseName capitalizedString];
+    [fileManager removeItemAtPath:DICT_BUNDLE_DIRECTORY_PATH error:nil];
 }
 
 @end

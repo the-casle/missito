@@ -366,14 +366,15 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                             NSMutableDictionary *row = _objects[indexPath.row];
                                             NSMutableArray *holdArray = row[@"Array"];
                                             for(NSMutableDictionary *holdDict in holdArray){
+                                                NSLog(@"missito_APP | %lu", holdArray.count);
                                                 NSString *bundleId = holdDict[@"DefaultsBundleID"];
                                                 NSMutableDictionary *baseDict = holdDict[@"BaseDict"];
                                                 [MISSerializationController overideBundle:bundleId withDict: baseDict];
-                                                [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
-                                                [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
-                                                [SVProgressHUD showWithStatus:@"Syncronizing"];
-                                                [SVProgressHUD dismissWithDelay:3];
                                             }
+                                            [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
+                                            [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
+                                            [SVProgressHUD showWithStatus:@"Syncronizing"];
+                                            [SVProgressHUD dismissWithDelay:3];
                                         }];
     UIAlertAction *editNameButton = [UIAlertAction
                                      actionWithTitle:@"Edit Name"

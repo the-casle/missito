@@ -29,17 +29,20 @@
 
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict {
     if(bundle && dict){
-        CFArrayRef arrayKeys = CFPreferencesCopyKeyList((__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-        if(arrayKeys){
-            CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)bundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+        
+        CFArrayRef arrayKeys = CFPreferencesCopyKeyList((__bridge CFStringRef)bundle, CFSTR("mobile"), kCFPreferencesAnyHost);
+        if(arrayKeys && CFArrayGetCount(arrayKeys) > 0){
+            CFPreferencesSetMultiple((__bridge CFDictionaryRef)dict[@"Plist"], nil, (__bridge CFStringRef)bundle, CFSTR("mobile"), kCFPreferencesAnyHost);
         } else {
             NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, bundle];
             if (@available(iOS 11, tvOS 11, *)) {
+                NSError *error;
                 [dict[@"Plist"] writeToURL:[NSURL fileURLWithPath:pathToFile]
-                               error:nil];
+                               error:&error];
+                NSLog(@"missito_APP | error: %@",error);
             }
         }
-        CFPreferencesAppSynchronize((__bridge CFStringRef)bundle);
+        CFPreferencesSynchronize((__bridge CFStringRef)bundle, CFSTR("mobile"), kCFPreferencesAnyHost);
     }
 }
 
@@ -74,7 +77,6 @@
         NSString *fileNoPlist = [fileName stringByReplacingOccurrencesOfString:@".plist" withString:@""];
         BOOL exists = NO;
         for(NSDictionary *infoPlists in [self infoPlists]){
-            NSLog(@"missito_APP | %@ %@", fileNoPlist, infoPlists[@"CFBundleIdentifier"]);
             if([fileNoPlist isEqualToString: infoPlists[@"CFBundleIdentifier"]]){
                 exists = YES;
                 break;

@@ -26,7 +26,7 @@
     
     NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _bundleID];
     if([fileManager fileExistsAtPath:pathToFile isDirectory:&isDir]){
-        _defaultsBundleID = _bundleID;
+        _defaultsBundleID = [self defaultsBundleID];
     } else {
         _defaultsBundleID = [self defaultsBundleID];
     }
@@ -186,15 +186,34 @@
     return section[indexPath.row];
 }
 
--(NSDictionary *) activePlist {    
+-(NSDictionary *) activePlist {
     CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
     CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     if(arrayKeys){
         CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
         NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
+        for(NSString *key in preferences){
+            NSLog(@"missito_APP | key:%@ value:%@", key, preferences[key]);
+        }
         CFRelease(arrayKeys);
         return preferences;
     }
+    
+    /*
+    NSString *pathToPref = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _defaultsBundleID];
+    CFStringRef onlyBundle = (__bridge CFStringRef)pathToPref;
+    //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:_defaultsBundleID];
+    [[NSUserDefaults standardUserDefaults]  addSuiteNamed:_defaultsBundleID];
+    CFPreferencesSynchronize(onlyBundle, CFSTR("mobile"), kCFPreferencesAnyHost);
+    NSArray *arrayKeys = (__bridge NSArray *)CFPreferencesCopyKeyList(onlyBundle, CFSTR("mobile"), kCFPreferencesAnyHost);
+    NSLog(@"missito_APP | %@ %@", onlyBundle, arrayKeys);
+    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
+    for(NSString *key in arrayKeys){
+        preferences[key] = [[NSUserDefaults standardUserDefaults] objectForKey:key];
+        NSLog(@"missito_APP | key:%@ value:%@", key, [[NSUserDefaults standardUserDefaults] objectForKey:key]);
+    }
+    [[NSUserDefaults standardUserDefaults]  removeSuiteNamed:_defaultsBundleID];
+    return preferences;*/
     NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _defaultsBundleID];
     return [NSDictionary dictionaryWithContentsOfFile:pathToFile];
 }
@@ -403,7 +422,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                             [popAlert addTextFieldWithConfigurationHandler:^(UITextField *textField){
                                                 NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
                                                 dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
-                                                textField.text = [NSString stringWithFormat:@"Backup - %@",[dateFormatter stringFromDate: [NSDate date]]];
+                                                textField.text = [NSString stringWithFormat:@"%@ - %@", self.infoPlist[@"label"],[dateFormatter stringFromDate: [NSDate date]]];
                                             }];
                                             UIAlertAction* popCancelButton = [UIAlertAction
                                                                               actionWithTitle:@"Cancel"

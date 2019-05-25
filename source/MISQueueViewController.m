@@ -42,7 +42,11 @@
         
         MISSharingController *sharingCont = [MISSharingController sharedInstance];
         [sharingCont.queueArray addObject:shareDict];
+        [_objects addObject: shareDict];
+        [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow: (_objects.count - 1) inSection:0]] withRowAnimation:
+         UITableViewRowAnimationFade];
     }
+    [self updateBadgeCount];
     
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];

@@ -105,8 +105,7 @@
     if(indexPath.section){ // Not 0
         MISSharingController *sharingCont = [MISSharingController sharedInstance];
         BOOL isQueued = NO;
-        
-        for(NSMutableDictionary *shareDict in sharingCont.queueArray){ // THIS IS BUGGED STILL.
+        for(NSMutableDictionary *shareDict in sharingCont.queueArray){
             NSMutableDictionary *base = shareDict[@"BaseDict"];
             NSMutableDictionary *currentDict = [self dataForIndex:indexPath];
             if([currentDict[@"Plist"] isEqualToDictionary: base[@"Plist"]] && [currentDict[@"Name"] isEqualToString:base[@"Name"]]){
@@ -187,61 +186,11 @@
 }
 
 -(NSDictionary *) activePlist {
-    CFStringRef onlyBundle = (__bridge CFStringRef)_defaultsBundleID;
-    CFArrayRef arrayKeys = CFPreferencesCopyKeyList(onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-    if(arrayKeys){
-        CFDictionaryRef values = CFPreferencesCopyMultiple(arrayKeys, onlyBundle, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-        NSMutableDictionary *preferences = [CFBridgingRelease(values) mutableCopy];
-        for(NSString *key in preferences){
-            NSLog(@"missito_APP | key:%@ value:%@", key, preferences[key]);
-        }
-        CFRelease(arrayKeys);
-        return preferences;
-    }
-    
-    /*
-    NSString *pathToPref = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _defaultsBundleID];
-    CFStringRef onlyBundle = (__bridge CFStringRef)pathToPref;
-    //[[NSUserDefaults standardUserDefaults] removePersistentDomainForName:_defaultsBundleID];
-    [[NSUserDefaults standardUserDefaults]  addSuiteNamed:_defaultsBundleID];
-    CFPreferencesSynchronize(onlyBundle, CFSTR("mobile"), kCFPreferencesAnyHost);
-    NSArray *arrayKeys = (__bridge NSArray *)CFPreferencesCopyKeyList(onlyBundle, CFSTR("mobile"), kCFPreferencesAnyHost);
-    NSLog(@"missito_APP | %@ %@", onlyBundle, arrayKeys);
-    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-    for(NSString *key in arrayKeys){
-        preferences[key] = [[NSUserDefaults standardUserDefaults] objectForKey:key];
-        NSLog(@"missito_APP | key:%@ value:%@", key, [[NSUserDefaults standardUserDefaults] objectForKey:key]);
-    }
-    [[NSUserDefaults standardUserDefaults]  removeSuiteNamed:_defaultsBundleID];
-    return preferences;*/
-    NSString *pathToFile = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_PATH, _defaultsBundleID];
-    return [NSDictionary dictionaryWithContentsOfFile:pathToFile];
+    return [MISSerializationController activePlistForBundle: _defaultsBundleID];
 }
 
 -(NSString *) defaultsBundleID {
-    NSString *pathToBundle = [NSString stringWithFormat:@"%@/%@.bundle", PREFERNCE_BUNDLE_PATH, self.infoPlist[@"CFBundleExecutable"]];
-    NSSet* dirs = [NSSet setWithArray:[[NSFileManager defaultManager] contentsOfDirectoryAtPath:pathToBundle error:nil]];
-    NSString *backup = nil;
-    for(NSString *filename in dirs){
-        if([filename rangeOfString:@".plist"].location != NSNotFound) {
-            NSString *dictString = [NSString stringWithFormat:@"%@/%@",pathToBundle, filename];
-            NSDictionary *possibleDict = [NSDictionary dictionaryWithContentsOfFile:dictString];
-            NSSet *itemSet = [NSSet setWithArray: possibleDict[@"items"]];
-            if(itemSet){
-                for(NSDictionary *cell in itemSet){
-                    NSString *possibleDefaults = cell[@"defaults"];
-                    if(possibleDefaults){
-                        backup = possibleDefaults;
-                        if([possibleDefaults rangeOfString:@"color" options:NSCaseInsensitiveSearch].location == NSNotFound){
-                            return possibleDefaults;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    if(backup) return backup;
-    else return _bundleID; //If it cant find it
+    return [MISSerializationController defaultsBundleIDForInfoPlist:self.infoPlist];
 }
 
 -(void) saveObjects{

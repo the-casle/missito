@@ -12,4 +12,6 @@
 +(void) overideBundle:(NSString *)bundle withDict:(NSMutableDictionary *) dict;
 +(NSMutableArray *) infoPlists;
 +(void)clearCache;
++(NSDictionary *) activePlistForBundle:(NSString *)bundleID;
++(NSString *) defaultsBundleIDForInfoPlist:(NSDictionary *)infoPlist;
 @end

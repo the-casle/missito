@@ -20,29 +20,32 @@
     if(_objects.count > 0){
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
     } else {
-        UIButton *info = [UIButton buttonWithType:UIButtonTypeInfoLight];
-        [info addTarget:self action:@selector(infoIcon:) forControlEvents:UIControlEventTouchUpInside];
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:info];
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Queue All" style:UIBarButtonItemStylePlain target:self action:@selector(queueAll:)];
     }
 }
 
--(void) infoIcon:(id)sender{
-    UIAlertController *alert = [UIAlertController
-                                alertControllerWithTitle:@"Queue"
-                                message:@"The queue is used to convert saved preferences into a shareable format. Multiple can be bundled together to save setups or for sharing."
-                                preferredStyle:
-                                UIAlertControllerStyleAlert];
+-(void) queueAll:(id)sender{
+    for(NSDictionary *infoPlist in [MISSerializationController infoPlists]){
+        NSString *defaultsBundleID = [MISSerializationController defaultsBundleIDForInfoPlist:infoPlist];
+        
+        NSMutableDictionary *holder = [[NSMutableDictionary alloc] init];
+        holder[@"Plist"] = [MISSerializationController activePlistForBundle:defaultsBundleID];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc]init];
+        dateFormatter.dateFormat = @"MM/dd/yy HH:mm";
+        holder[@"Name"] = [NSString stringWithFormat:@"%@ - %@", infoPlist[@"label"],[dateFormatter stringFromDate: [NSDate date]]];
+        
+        
+        NSMutableDictionary *shareDict = [[NSMutableDictionary alloc] init];
+        shareDict[@"BundleID"] = infoPlist[@"CFBundleIdentifier"];
+        shareDict[@"DefaultsBundleID"] = defaultsBundleID;
+        shareDict[@"BaseDict"] = holder;
+        
+        MISSharingController *sharingCont = [MISSharingController sharedInstance];
+        [sharingCont.queueArray addObject:shareDict];
+    }
     
-    UIAlertAction* cancelButton = [UIAlertAction
-                                   actionWithTitle:@"Dismiss"
-                                   style:UIAlertActionStyleCancel
-                                   handler:^(UIAlertAction * action) {
-                                       //Handle no, thanks button
-                                   }];
     
-    [alert addAction:cancelButton];
-    
-    [self presentViewController:alert animated:YES completion:nil];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Build" style:UIBarButtonItemStylePlain target:self action:@selector(compile:)];
 }
 
 - (void)compile:(id)sender {

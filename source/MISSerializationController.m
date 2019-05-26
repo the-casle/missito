@@ -63,7 +63,11 @@
             NSString *path = [NSString stringWithFormat:@"%@/%@.plist", PREFERNCE_LOADER_PATH, dict[@"CFBundleExecutable"]];
             NSDictionary *preferenceLoader = [NSDictionary dictionaryWithContentsOfFile:path];
             NSDictionary *entry = preferenceLoader[@"entry"];
-            dict[@"label"] = entry[@"label"];
+            if(entry[@"label"]){
+                dict[@"label"] = entry[@"label"];
+            } else {
+                dict[@"label"] = dict[@"CFBundleExecutable"];
+            }
             [sortedPrefs addObject:dict];
         }
     }

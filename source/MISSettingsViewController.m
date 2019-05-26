@@ -29,6 +29,7 @@
     [thirdSection addObject: @{@"Title":@"midnightchips", @"Subtitle":@"good friend and helped some", @"Link":@"https://twitter.com/midnightchip", @"Image":@"https://twitter.com/midnightchip/profile_image?size=original"}];
     [thirdSection addObject: @{@"Title":@"DGh0st", @"Subtitle":@"base64 dumb", @"Link":@"https://twitter.com/D_Gh0st", @"Image":@"https://twitter.com/D_Gh0st/profile_image?size=original"}];
     [thirdSection addObject: @{@"Title":@"Karim", @"Subtitle":@"preferences dumb", @"Link":@"https://twitter.com/karimo299", @"Image":@"https://twitter.com/karimo299/profile_image?size=original"}];
+    [thirdSection addObject: @{@"Title":@"Hwasser", @"Subtitle":@"borrowed his code forever", @"Link":@"https://twitter.com/martinhwasser", @"Image":@"https://twitter.com/martinhwasser/profile_image?size=original"}];
     
     [forthSection addObject: @{@"Title":@"Clear Cache", @"Subtitle":@"Clear uninstalled tweak saves", @"Image":@"https://cdn3.iconfinder.com/data/icons/cleaning-icons/512/Bucket_with_Soap-512.png", @"Block":^{
         [MISSerializationController clearCache];

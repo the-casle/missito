@@ -1,8 +1,10 @@
 Package: com.thecasle.missito
 Name: Missito
-Version: 0.1.0
+Version: 0.1.4
+Depends: mobilesubstrate
 Architecture: iphoneos-arm
 Description: Preference Manager
 Maintainer: Jake Kaslewicz
 Author: Jake Kaslewicz
+Depiction: https://the-casle.github.io/public/depic/?p=com.thecasle.missito/
 Section: Utilities
